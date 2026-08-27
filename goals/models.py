@@ -11,9 +11,7 @@ class Goal(BaseModel):
     """A recurring saving rule, e.g. 'deposit $1500 every 15 days into Nu'.
     This is intent/plan only — it never moves money by itself.
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     island = models.ForeignKey(Island, on_delete=models.CASCADE, related_name="goals")
-    # Denormalized, same rationale as Island.user
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                               related_name="goals")
     target_amount = models.DecimalField(max_digits=18, decimal_places=2)
@@ -34,7 +32,6 @@ class GoalCompletion(BaseModel):
     start_date + n*frequency_days up to today; persisted once
     marked completed so history is queryable (e.g. 'compliance rate').
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name="completions")
     expected_date = models.DateField()
     completed_date = models.DateField(null=True, blank=True)

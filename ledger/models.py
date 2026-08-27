@@ -28,9 +28,7 @@ class Transaction(BaseModel):
         LEISURE = "leisure", "Leisure"
         OTHER = "other", "Other"
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     island = models.ForeignKey(Island, on_delete=models.CASCADE, related_name="transactions")
-    # Denormalized, same rationale as Island.user
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                               related_name="transactions")
     type = models.CharField(max_length=12, choices=Type.choices)

@@ -12,7 +12,6 @@ class IslandTemplate(BaseModel):
         CASH = "cash", "Cash"
         ASSET = "asset", "Asset"
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     kind = models.CharField(max_length=10, choices=Kind.choices)
     symbol = models.CharField(max_length=20, null=True, blank=True,
@@ -39,7 +38,6 @@ class Module(BaseModel):
         LEISURE = "leisure", "Leisure"
         EXPENSES = "expenses", "Expenses"
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                               related_name="modules")
     name = models.CharField(max_length=100)
@@ -64,7 +62,6 @@ class Island(BaseModel):
         SIMPLE = "simple", "Simple"
         COMPOUND = "compound", "Compound"
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="islands")
     # Denormalized on purpose: direct security filtering + RLS-friendly + avoids
     # joining through module on every query. See project notes on denormalization.
