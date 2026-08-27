@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.utils import timezone
 
@@ -54,6 +56,7 @@ class BaseModel(models.Model):
     Modelo base abstracto para todos los modelos del proyecto.
     Incluye campos de auditoría y soft delete.
     """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
