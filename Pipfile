@@ -26,6 +26,7 @@ django-filter = "*"
 psycopg = {extras = ["binary"], version = "*"}
 python-decouple = "*"
 mkdocs-material = "*"
+drf-yasg = "*"
 
 [dev-packages]
 
