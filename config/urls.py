@@ -25,13 +25,17 @@ from drf_spectacular.views import (
 from users.urls import user_path
 from django.conf import settings
 from django.conf.urls.static import static
+from portfolio.urls import urlpatterns as portoliopatterns
+from goals.urls import urlpatterns as goalspatterns
 
 def trigger_error(request):
     division_by_zero = 1 / 0
 
 api_v1_patterns = [
     path('auth/', include(authentications_patterns)),
-    path('users/', include(user_path))
+    path('users/', include(user_path)),
+    path('portfolio/', include(portoliopatterns)),
+    path('/', include(goalspatterns) ),
 ]
 
 urlpatterns = [
