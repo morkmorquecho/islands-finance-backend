@@ -497,7 +497,6 @@ SPECTACULAR_SETTINGS = {
         {'name': 'auth', 'description': 'Autenticación, providers y tokens JWT'},
         {'name': 'users', 'description': 'Gestión de usuarios'},     
         {'name': 'goals', 'description': 'Gestion de objetivos'},     
-        {'name': 'islands', 'description': 'Modulos, Islas y relacionado al portafolio'},                       
     ],
         
         
