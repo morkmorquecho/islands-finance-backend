@@ -1,7 +1,9 @@
 from rest_framework import serializers
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from portfolio.models import Island
 from .models import Transaction
+from .services import assert_sufficient_funds
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -74,5 +76,20 @@ class TransactionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"category": "Only allowed when type='expense'."}
             )
+
+        # Business rule that depends on *other* transactions already on this
+        # island (can't withdraw/sell more than what's actually there).
+        # Lives in services.py, not here, because it needs to query history —
+        # this method only checks the shape of the incoming data.
+        try:
+            assert_sufficient_funds(
+                island, tx_type,
+                amount=amount, quantity=quantity,
+                exclude_pk=self.instance.pk if self.instance else None,
+            )
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"amount": exc.messages[0]}) \
+                if tx_type in {Transaction.Type.WITHDRAWAL, Transaction.Type.EXPENSE} \
+                else serializers.ValidationError({"quantity": exc.messages[0]})
 
         return attrs
