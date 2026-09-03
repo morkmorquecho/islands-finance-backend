@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 
 from interest_engine.services import get_island_summary
@@ -26,14 +28,11 @@ class ModuleSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "total_value", "created_at", "updated_at"]
 
     def get_total_value(self, obj):
-        # Computed on every read, never stored — sums each island's own
-        # on-read value (interest_engine). Cheap at this project's scale;
-        # see project notes on why we don't cache/persist this.
         return sum(
-            (get_island_summary(island)["value"] for island in obj.islands.all()),
-            start=0,
+            (get_island_summary(island)["value_base"] for island in obj.islands.all()),
+            start=Decimal("0"),
         )
-
+    
     def create(self, validated_data):
         # user is never trusted from the client, always taken from the request
         validated_data["user"] = self.context["request"].user
@@ -70,6 +69,7 @@ class IslandSerializer(serializers.ModelSerializer):
         if request is not None:
             self.fields["module"].queryset = Module.objects.filter(user=request.user)
 
+
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
 
@@ -82,11 +82,10 @@ class IslandSerializer(serializers.ModelSerializer):
                 validated_data.setdefault("annual_rate", template.default_rate)
             elif template.kind == Island.Kind.ASSET:
                 validated_data.setdefault("symbol", template.symbol)
-                # asset_type NOT on the template — user must supply it,
-                # since a symbol like "SPY" vs a crypto ticker isn't
-                # inferable from the template alone.
+                validated_data.setdefault("asset_type", template.asset_type)  # <-- nuevo
 
         return super().create(validated_data)
+
 
     def validate(self, attrs):
         template = attrs.get("template")
@@ -95,24 +94,20 @@ class IslandSerializer(serializers.ModelSerializer):
             or getattr(self.instance, "kind", None)
 
         if kind is None:
-            raise serializers.ValidationError(
-                {"kind": "Required when no template is given."}
-            )
+            raise serializers.ValidationError({"kind": "Required when no template is given."})
         if not attrs.get("name") and not template and not self.instance:
-            raise serializers.ValidationError(
-                {"name": "Required when no template is given."}
-            )
+            raise serializers.ValidationError({"name": "Required when no template is given."})
 
         currency = attrs.get("currency", getattr(self.instance, "currency", None))
         symbol = attrs.get("symbol") \
             or (template.symbol if template else None) \
             or getattr(self.instance, "symbol", None)
-        asset_type = attrs.get("asset_type", getattr(self.instance, "asset_type", None))
+        asset_type = attrs.get("asset_type") \
+            or (template.asset_type if template else None) \
+            or getattr(self.instance, "asset_type", None)
 
         if kind == Island.Kind.CASH and not currency:
-            raise serializers.ValidationError(
-                {"currency": "Required for cash islands."}
-            )
+            raise serializers.ValidationError({"currency": "Required for cash islands."})
         if kind == Island.Kind.ASSET:
             if not symbol:
                 raise serializers.ValidationError(

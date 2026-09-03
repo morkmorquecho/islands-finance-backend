@@ -28,7 +28,7 @@ from django.conf.urls.static import static
 from portfolio.urls import urlpatterns as portoliopatterns
 from goals.urls import urlpatterns as goalspatterns
 from ledger.urls import urlpatterns as ledgerspatterns
-
+from market_data.urls import urlpatterns as marketdatapatterns
 def trigger_error(request):
     division_by_zero = 1 / 0
 
@@ -37,7 +37,8 @@ api_v1_patterns = [
     path('users/', include(user_path)),
     path('portfolio/', include(portoliopatterns)),
     path('/', include(goalspatterns) ),
-    path('/', include(ledgerspatterns))
+    path('/', include(ledgerspatterns)),
+    path("/market-data/", include(marketdatapatterns)),
 ]
 
 urlpatterns = [

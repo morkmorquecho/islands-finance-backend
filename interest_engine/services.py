@@ -1,14 +1,12 @@
 from datetime import date
 from decimal import Decimal
+from market_data.services import convert_to_base
 
 from django.utils import timezone
 
 
 def calculate_cash_island_value(island, as_of: date = None) -> dict:
-    """Compound interest, on-read. Each transaction (deposit/withdrawal/
-    expense) grows independently from its own date using island.annual_rate.
-    See project notes: no cron, no stored balance — this IS the balance.
-    """
+
     as_of = as_of or timezone.localdate()
     rate = island.annual_rate or Decimal("0")
 
@@ -24,24 +22,22 @@ def calculate_cash_island_value(island, as_of: date = None) -> dict:
 
     return {
         "deposited": deposited,
-        "value": value,
+        "currency": island.currency,
+        "value_native": value,
+        "value_base": convert_to_base(value, island.currency),
         "interest_earned": value - deposited,
     }
 
 
 def calculate_asset_island_value(island, as_of: date = None) -> dict:
-    """Quantity held × current market price. `current price` comes from
-    market_data (cached lookup) — imported lazily to avoid a hard dependency
-    if that app isn't wired up yet.
-    """
-    from market_data.services import get_price  # local import: avoid app-load-order issues
+    from market_data.services import get_price
 
     quantity = Decimal("0")
     cost_basis = Decimal("0")
 
-    for tx in island.transactions.filter(
-        type__in=["buy", "sell"]
-    ).only("type", "quantity", "price_at_tx"):
+    for tx in island.transactions.filter(type__in=["buy", "sell"]).only(
+        "type", "quantity", "price_at_tx"
+    ):
         if tx.type == "buy":
             quantity += tx.quantity
             cost_basis += tx.quantity * tx.price_at_tx
@@ -50,13 +46,16 @@ def calculate_asset_island_value(island, as_of: date = None) -> dict:
             cost_basis -= tx.quantity * tx.price_at_tx
 
     price = get_price(island.symbol, island.asset_type) if quantity > 0 else Decimal("0")
-    value = quantity * price
+    value_native = quantity * price
+    value_base = convert_to_base(value_native, island.currency)
 
     return {
         "quantity": quantity,
-        "value": value,
+        "currency": island.currency,
+        "value_native": value_native,
+        "value_base": value_base,
         "cost_basis": cost_basis,
-        "gain_loss": value - cost_basis,
+        "gain_loss": value_native - cost_basis,
     }
 
 
