@@ -12,10 +12,17 @@ class IslandTemplate(BaseModel):
         CASH = "cash", "Cash"
         ASSET = "asset", "Asset"
 
+    class AssetType(models.TextChoices):
+        CRYPTO = "crypto", "Crypto"
+        STOCK = "stock", "Stock"
+
     name = models.CharField(max_length=100)
     kind = models.CharField(max_length=10, choices=Kind.choices)
     symbol = models.CharField(max_length=20, null=True, blank=True,
-                               help_text="Ticker for asset kind, e.g. SPY, BTC-USD")
+                                help_text="Asset islands, e.g. BTC-USD, SPY")
+    asset_type = models.CharField(max_length=10, choices=AssetType.choices,
+                                   null=True, blank=True,
+                                   help_text="Required when kind=asset, e.g. crypto or stock")
     default_rate = models.DecimalField(max_digits=6, decimal_places=4, null=True, blank=True,
                                         help_text="Suggested annual rate, cash kind only")
     logo_url = models.URLField(null=True, blank=True)
@@ -82,7 +89,12 @@ class Island(BaseModel):
     color = models.CharField(max_length=7, default="#0EA5E9")
 
     class Meta:
-        ordering = ["created_at"]
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(kind="asset") | models.Q(asset_type__isnull=False),
+                name="asset_island_requires_asset_type",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.name} [{self.kind}]"

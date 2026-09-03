@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from interest_engine.services import get_island_summary
 from .models import IslandTemplate, Module, Island
 
 
@@ -16,10 +17,22 @@ class IslandTemplateSerializer(serializers.ModelSerializer):
 
 
 class ModuleSerializer(serializers.ModelSerializer):
+    total_value = serializers.SerializerMethodField()
+
     class Meta:
         model = Module
-        fields = ["id", "name", "type", "order", "created_at", "updated_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = ["id", "name", "type", "order", "total_value",
+                  "created_at", "updated_at"]
+        read_only_fields = ["id", "total_value", "created_at", "updated_at"]
+
+    def get_total_value(self, obj):
+        # Computed on every read, never stored — sums each island's own
+        # on-read value (interest_engine). Cheap at this project's scale;
+        # see project notes on why we don't cache/persist this.
+        return sum(
+            (get_island_summary(island)["value"] for island in obj.islands.all()),
+            start=0,
+        )
 
     def create(self, validated_data):
         # user is never trusted from the client, always taken from the request
@@ -32,25 +45,29 @@ class IslandSerializer(serializers.ModelSerializer):
     template = serializers.PrimaryKeyRelatedField(
         queryset=IslandTemplate.objects.all(), required=False, allow_null=True
     )
-    # Not required at the API level: when `template` is given, these are
-    # auto-filled in create() from the template. Still required overall —
-    # validate() enforces that, one way or another, they end up set.
     name = serializers.CharField(required=False)
     kind = serializers.ChoiceField(choices=Island.Kind.choices, required=False)
+    asset_type = serializers.ChoiceField(
+        choices=Island.AssetType.choices, required=False, allow_null=True
+    )
+    summary = serializers.SerializerMethodField()
 
     class Meta:
         model = Island
         fields = [
             "id", "module", "template", "name", "kind", "currency", "symbol",
-            "interest_type", "annual_rate", "color", "created_at", "updated_at",
+            "asset_type", "interest_type", "annual_rate", "color", "summary",
+            "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "summary", "created_at", "updated_at"]
+
+    def get_summary(self, obj):
+        return get_island_summary(obj)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get("request")
         if request is not None:
-            # a user can only attach an island to their own module
             self.fields["module"].queryset = Module.objects.filter(user=request.user)
 
     def create(self, validated_data):
@@ -58,10 +75,6 @@ class IslandSerializer(serializers.ModelSerializer):
 
         template = validated_data.get("template")
         if template is not None:
-            # Auto-fill from template so the user doesn't re-type known data.
-            # These are COPIED (not referenced live) — see model docstring:
-            # if the template's default rate changes later, existing islands
-            # keep the rate they were created with.
             validated_data.setdefault("kind", template.kind)
             validated_data.setdefault("name", template.name)
             validated_data.setdefault("color", template.color)
@@ -69,13 +82,14 @@ class IslandSerializer(serializers.ModelSerializer):
                 validated_data.setdefault("annual_rate", template.default_rate)
             elif template.kind == Island.Kind.ASSET:
                 validated_data.setdefault("symbol", template.symbol)
+                # asset_type NOT on the template — user must supply it,
+                # since a symbol like "SPY" vs a crypto ticker isn't
+                # inferable from the template alone.
 
         return super().create(validated_data)
 
     def validate(self, attrs):
         template = attrs.get("template")
-        # Effective kind: explicit value wins, otherwise fall back to the
-        # template's kind, otherwise the existing instance's (on update).
         kind = attrs.get("kind") \
             or (template.kind if template else None) \
             or getattr(self.instance, "kind", None)
@@ -93,13 +107,19 @@ class IslandSerializer(serializers.ModelSerializer):
         symbol = attrs.get("symbol") \
             or (template.symbol if template else None) \
             or getattr(self.instance, "symbol", None)
+        asset_type = attrs.get("asset_type", getattr(self.instance, "asset_type", None))
 
         if kind == Island.Kind.CASH and not currency:
             raise serializers.ValidationError(
                 {"currency": "Required for cash islands."}
             )
-        if kind == Island.Kind.ASSET and not symbol:
-            raise serializers.ValidationError(
-                {"symbol": "Required for asset islands (or pick a template that has one)."}
-            )
+        if kind == Island.Kind.ASSET:
+            if not symbol:
+                raise serializers.ValidationError(
+                    {"symbol": "Required for asset islands (or pick a template that has one)."}
+                )
+            if not asset_type:
+                raise serializers.ValidationError(
+                    {"asset_type": "Required for asset islands (crypto or stock)."}
+                )
         return attrs
