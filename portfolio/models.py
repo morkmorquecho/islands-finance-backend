@@ -65,13 +65,15 @@ class Island(BaseModel):
         CASH = "cash", "Cash"
         ASSET = "asset", "Asset"
 
+    class AssetType(models.TextChoices):
+        CRYPTO = "crypto", "Crypto"
+        STOCK = "stock", "Stock"
+
     class InterestType(models.TextChoices):
         SIMPLE = "simple", "Simple"
         COMPOUND = "compound", "Compound"
 
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="islands")
-    # Denormalized on purpose: direct security filtering + RLS-friendly + avoids
-    # joining through module on every query. See project notes on denormalization.
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                               related_name="islands")
     template = models.ForeignKey(IslandTemplate, on_delete=models.SET_NULL,
@@ -79,9 +81,16 @@ class Island(BaseModel):
     name = models.CharField(max_length=100)
     kind = models.CharField(max_length=10, choices=Kind.choices)
     currency = models.CharField(max_length=10, null=True, blank=True,
-                                 help_text="Cash islands, e.g. MXN, USD")
+                                help_text="Native currency for display: cash islands "
+                                        "(user-set, e.g. MXN/USD) or asset islands "
+                                        "(from provider, e.g. USD for crypto/US stocks, "
+                                        "MXN for BMV)")
     symbol = models.CharField(max_length=20, null=True, blank=True,
-                               help_text="Asset islands, e.g. BTC-USD, SPY")
+                               help_text="Asset islands, provider-ready symbol, "
+                                         "e.g. 'bitcoin' (CoinGecko id) or 'SPY' (Twelve Data ticker)")
+    asset_type = models.CharField(max_length=10, choices=AssetType.choices,
+                                   null=True, blank=True,
+                                   help_text="Required when kind=asset, e.g. crypto or stock")
     interest_type = models.CharField(max_length=10, choices=InterestType.choices,
                                       null=True, blank=True, help_text="Cash islands only")
     annual_rate = models.DecimalField(max_digits=6, decimal_places=4, null=True, blank=True,
@@ -89,6 +98,7 @@ class Island(BaseModel):
     color = models.CharField(max_length=7, default="#0EA5E9")
 
     class Meta:
+        ordering = ["created_at"]
         constraints = [
             models.CheckConstraint(
                 check=~models.Q(kind="asset") | models.Q(asset_type__isnull=False),
@@ -98,5 +108,3 @@ class Island(BaseModel):
 
     def __str__(self):
         return f"{self.name} [{self.kind}]"
-
-    
