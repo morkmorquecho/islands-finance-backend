@@ -1,14 +1,17 @@
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import OpenApiParameter, OpenApiTypes
+
 
 ASSET_SEARCH_SCHEMA = dict(
     tags=['market_data'],
-    summary='Buscar activos',
+    summary='Buscar activos financieros',
     description=(
-        'Busca activos financieros según el tipo especificado.\n\n'
-        '**Tipos de activo:**\n'
-        '- `crypto`: Busca criptomonedas utilizando CoinGecko.\n'
-        '- `stock`: Busca acciones utilizando Twelve Data.\n\n'
+        'Busca activos por nombre, símbolo o texto relacionado según el tipo '
+        'de activo seleccionado.\n\n'
+        '**Tipos de activo soportados:**\n'
+        '- `crypto`: busca criptomonedas mediante CoinGecko. La respuesta '
+        'utiliza el `id` de CoinGecko como identificador del activo.\n'
+        '- `stock`: busca acciones mediante Twelve Data. La respuesta utiliza '
+        'el `symbol` de Twelve Data como identificador del activo.\n\n'
         'La búsqueda devuelve como máximo 10 resultados.'
     ),
     parameters=[
@@ -25,14 +28,14 @@ ASSET_SEARCH_SCHEMA = dict(
             type=OpenApiTypes.STR,
             location=OpenApiParameter.QUERY,
             required=True,
-            description='Tipo de activo a buscar.',
+            description='Tipo de activo que se desea buscar.',
             enum=['crypto', 'stock'],
             example='crypto',
         ),
     ],
     responses={
         200: {
-            'description': 'Resultados de búsqueda de activos',
+            'description': 'Resultados de búsqueda encontrados.',
             'content': {
                 'application/json': {
                     'examples': {
@@ -43,12 +46,6 @@ ASSET_SEARCH_SCHEMA = dict(
                                     'id': 'bitcoin',
                                     'name': 'Bitcoin',
                                     'symbol': 'btc',
-                                    'currency': 'USD',
-                                },
-                                {
-                                    'id': 'ethereum',
-                                    'name': 'Ethereum',
-                                    'symbol': 'eth',
                                     'currency': 'USD',
                                 },
                             ],
@@ -62,26 +59,20 @@ ASSET_SEARCH_SCHEMA = dict(
                                     'exchange': 'BMV',
                                     'currency': 'MXN',
                                 },
-                                {
-                                    'symbol': 'AAPL',
-                                    'name': 'Apple Inc',
-                                    'exchange': 'NASDAQ',
-                                    'currency': 'USD',
-                                },
                             ],
                         },
                     },
-                }
+                },
             },
         },
         400: {
-            'description': 'Parámetros de búsqueda inválidos',
+            'description': 'Parámetros de búsqueda inválidos o faltantes.',
             'content': {
                 'application/json': {
                     'example': {
-                        'detail': 'q and asset_type (crypto|stock) are required'
-                    }
-                }
+                        'detail': 'q and asset_type (crypto|stock) are required',
+                    },
+                },
             },
         },
     },

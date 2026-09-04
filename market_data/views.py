@@ -3,9 +3,11 @@ from django.shortcuts import render
 # Create your views here.
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from core.docs.schema_utils import auto_schema
+from market_data.docs.schemas import ASSET_SEARCH_SCHEMA
 from market_data.services import search_assets
 
-
+@auto_schema(**ASSET_SEARCH_SCHEMA)
 @api_view(["GET"])
 def asset_search(request):
     query = request.query_params.get("q", "")
