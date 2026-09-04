@@ -89,7 +89,7 @@ def remove_island_templates(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-           ("portfolio", "0001_initial"), 
+        ("portfolio", "0001_initial"),
     ]
 
     operations = [
