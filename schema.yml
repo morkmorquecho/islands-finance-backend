@@ -1,0 +1,2955 @@
+openapi: 3.0.3
+info:
+  title: Island Finance
+  version: 1.0.0
+  description: App financiera basada en modulos e islas <submodulos> para darle seguimiento
+    a los fondos del usuario y sus intereses asi como sus gastos
+paths:
+  /api/v1//goals/:
+    get:
+      operationId: v1_goals_list
+      description: |-
+        Obtiene las metas pertenecientes al usuario autenticado. Permite filtrar los resultados por isla y estado activo.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Listar metas
+      parameters:
+      - in: query
+        name: active
+        schema:
+          type: boolean
+        description: Filtra las metas por su estado activo.
+      - in: query
+        name: island
+        schema:
+          type: integer
+        description: ID de la isla por la que se desea filtrar.
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - goals
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGoalList'
+          description: ''
+    post:
+      operationId: v1_goals_create
+      description: |-
+        Crea una nueva meta para el usuario autenticado.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Crear meta
+      tags:
+      - goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+          description: ''
+  /api/v1//goals/{id}/:
+    get:
+      operationId: v1_goals_retrieve
+      description: |-
+        Obtiene los detalles de una meta perteneciente al usuario autenticado.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Obtener meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Meta no encontrada.
+          description: ''
+    put:
+      operationId: v1_goals_update
+      description: |-
+        Actualiza completamente una meta perteneciente al usuario autenticado.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Actualizar meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Meta no encontrada.
+          description: ''
+    patch:
+      operationId: v1_goals_partial_update
+      description: |-
+        Actualiza parcialmente una meta perteneciente al usuario autenticado.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Actualizar parcialmente una meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGoalRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGoalRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGoalRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Meta no encontrada.
+          description: ''
+    delete:
+      operationId: v1_goals_destroy
+      description: |-
+        Elimina una meta perteneciente al usuario autenticado.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Eliminar meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                description: Meta eliminada correctamente.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Meta no encontrada.
+          description: ''
+  /api/v1//goals/{id}/completions/:
+    get:
+      operationId: v1_goals_completions_retrieve
+      description: |-
+        Obtiene todos los períodos esperados de la meta hasta la fecha actual. Los períodos faltantes se generan automáticamente antes de devolver la respuesta.
+
+        La respuesta incluye el porcentaje de cumplimiento de la meta y el listado de períodos generados o existentes.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Listar cumplimientos de una meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Cumplimientos de la meta.
+                content:
+                  application/json:
+                    example:
+                      compliance_rate: 75.0
+                      results: []
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Meta no encontrada.
+          description: ''
+  /api/v1//goals/{id}/completions/mark/:
+    post:
+      operationId: v1_goals_completions_mark_create
+      description: |-
+        Mark a specific expected period as fulfilled, optionally
+        linking the real Transaction that satisfied it.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1//market-data/assets/search/:
+    get:
+      operationId: v1_market_data_assets_search_retrieve
+      description: |-
+        Busca activos por nombre, símbolo o texto relacionado según el tipo de activo seleccionado.
+
+        **Tipos de activo soportados:**
+        - `crypto`: busca criptomonedas mediante CoinGecko. La respuesta utiliza el `id` de CoinGecko como identificador del activo.
+        - `stock`: busca acciones mediante Twelve Data. La respuesta utiliza el `symbol` de Twelve Data como identificador del activo.
+
+        La búsqueda devuelve como máximo 10 resultados.
+
+        **Source:** `market_data.views.View.as_view.<locals>.view`
+      summary: Buscar activos financieros
+      parameters:
+      - in: query
+        name: asset_type
+        schema:
+          type: string
+          enum:
+          - crypto
+          - stock
+        description: Tipo de activo que se desea buscar.
+        required: true
+        examples:
+          Criptomonedas:
+            value: crypto
+          Acciones:
+            value: stock
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Texto utilizado para buscar el activo.
+        required: true
+        examples:
+          Bitcoin:
+            value: bitcoin
+          Apple:
+            value: apple
+      tags:
+      - market_data
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Resultados de búsqueda encontrados.
+                content:
+                  application/json:
+                    examples:
+                      crypto:
+                        summary: Búsqueda de criptomonedas
+                        value:
+                        - id: bitcoin
+                          name: Bitcoin
+                          symbol: btc
+                          currency: USD
+                      stock:
+                        summary: Búsqueda de acciones
+                        value:
+                        - symbol: AMXL.MX
+                          name: America Movil
+                          exchange: BMV
+                          currency: MXN
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Parámetros de búsqueda inválidos o faltantes.
+                content:
+                  application/json:
+                    example:
+                      detail: q and asset_type (crypto|stock) are required
+          description: ''
+  /api/v1//transactions/:
+    get:
+      operationId: v1_transactions_list
+      description: |-
+        Obtiene las transacciones pertenecientes al usuario autenticado. El usuario no puede consultar transacciones de otros usuarios.
+
+        **Filtros disponibles:**
+        - `island`: filtra por isla
+        - `type`: filtra por tipo de transacción
+        - `category`: filtra por categoría
+
+        **Ordenamiento disponible:**
+        - `date`
+        - `created_at`
+
+        También se pueden utilizar filtros por fecha como `date__gte` y `date__lte` para consultar un rango de transacciones.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Listar transacciones
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - transactions
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      description: Lista paginada de transacciones.
+                      content:
+                        application/json:
+                          example:
+                            count: 2
+                            next: null
+                            previous: null
+                            results:
+                            - id: 550e8400-e29b-41d4-a716-446655440000
+                              island: 650e8400-e29b-41d4-a716-446655440000
+                              type: deposit
+                              date: '2026-01-15'
+                              amount: '1000.00'
+                              quantity: null
+                              price_at_tx: null
+                              category: null
+                              note: Depósito inicial
+                              created_at: '2026-01-15T10:30:00Z'
+                              updated_at: '2026-01-15T10:30:00Z'
+          description: ''
+    post:
+      operationId: v1_transactions_create
+      description: |-
+        Crea una nueva transacción asociada al usuario autenticado. El usuario solo puede crear transacciones sobre sus propias islas.
+
+        **Islas de efectivo (`cash`):**
+        - Solo aceptan `deposit`, `withdrawal` y `expense`.
+        - `amount` es requerido.
+        - `quantity` y `price_at_tx` no aplican.
+
+        **Islas de activos (`asset`):**
+        - Solo aceptan `buy` y `sell`.
+        - `quantity` y `price_at_tx` son requeridos.
+        - `amount` no aplica.
+
+        `category` solamente puede utilizarse cuando `type` es `expense`.
+
+        Las operaciones de retiro, gasto y venta se validan contra las tenencias o saldo disponible de la isla.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Crear transacción
+      tags:
+      - transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                island:
+                  type: string
+                  format: uuid
+                  description: ID de una isla perteneciente al usuario autenticado.
+                type:
+                  type: string
+                  enum:
+                  - deposit
+                  - withdrawal
+                  - expense
+                  - buy
+                  - sell
+                date:
+                  type: string
+                  format: date
+                amount:
+                  type: string
+                  format: decimal
+                  nullable: true
+                quantity:
+                  type: string
+                  format: decimal
+                  nullable: true
+                price_at_tx:
+                  type: string
+                  format: decimal
+                  nullable: true
+                category:
+                  type: string
+                  nullable: true
+                note:
+                  type: string
+                  nullable: true
+              required:
+              - island
+              - type
+              - date
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                description: Transacción creada correctamente.
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      island: 650e8400-e29b-41d4-a716-446655440000
+                      type: deposit
+                      date: '2026-01-15'
+                      amount: '1000.00'
+                      quantity: null
+                      price_at_tx: null
+                      category: null
+                      note: Depósito inicial
+                      created_at: '2026-01-15T10:30:00Z'
+                      updated_at: '2026-01-15T10:30:00Z'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Datos inválidos o la transacción no cumple las reglas
+                  de la isla.
+          description: ''
+  /api/v1//transactions/{id}/:
+    get:
+      operationId: v1_transactions_retrieve
+      description: |-
+        Obtiene los detalles de una transacción perteneciente al usuario autenticado.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Obtener transacción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transactions
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Detalles de la transacción.
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      island: 650e8400-e29b-41d4-a716-446655440000
+                      type: deposit
+                      date: '2026-01-15'
+                      amount: '1000.00'
+                      quantity: null
+                      price_at_tx: null
+                      category: null
+                      note: Depósito inicial
+                      created_at: '2026-01-15T10:30:00Z'
+                      updated_at: '2026-01-15T10:30:00Z'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Transacción no encontrada o no pertenece al usuario autenticado.
+          description: ''
+    put:
+      operationId: v1_transactions_update
+      description: |-
+        Actualiza completamente una transacción perteneciente al usuario autenticado.
+
+        Se vuelven a aplicar las reglas de validación según el tipo de isla y de transacción. En operaciones de retiro, gasto o venta se verifica nuevamente que exista saldo o cantidad suficiente.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Actualizar transacción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                island:
+                  type: string
+                  format: uuid
+                type:
+                  type: string
+                  enum:
+                  - deposit
+                  - withdrawal
+                  - expense
+                  - buy
+                  - sell
+                date:
+                  type: string
+                  format: date
+                amount:
+                  type: string
+                  format: decimal
+                  nullable: true
+                quantity:
+                  type: string
+                  format: decimal
+                  nullable: true
+                price_at_tx:
+                  type: string
+                  format: decimal
+                  nullable: true
+                category:
+                  type: string
+                  nullable: true
+                note:
+                  type: string
+                  nullable: true
+              required:
+              - island
+              - type
+              - date
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Transacción actualizada correctamente.
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      island: 650e8400-e29b-41d4-a716-446655440000
+                      type: expense
+                      date: '2026-01-15'
+                      amount: '150.00'
+                      quantity: null
+                      price_at_tx: null
+                      category: food
+                      note: Comida
+                      created_at: '2026-01-15T10:30:00Z'
+                      updated_at: '2026-01-16T10:30:00Z'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Datos inválidos o la transacción actualizada no cumple
+                  las reglas de la isla.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Transacción no encontrada o no pertenece al usuario autenticado.
+          description: ''
+    patch:
+      operationId: v1_transactions_partial_update
+      description: |-
+        Actualiza parcialmente una transacción perteneciente al usuario autenticado. Los campos omitidos conservan su valor actual.
+
+        Las reglas de validación de la transacción se vuelven a evaluar utilizando tanto los valores enviados como los valores existentes.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Actualizar parcialmente una transacción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                island:
+                  type: string
+                  format: uuid
+                type:
+                  type: string
+                  enum:
+                  - deposit
+                  - withdrawal
+                  - expense
+                  - buy
+                  - sell
+                date:
+                  type: string
+                  format: date
+                amount:
+                  type: string
+                  format: decimal
+                  nullable: true
+                quantity:
+                  type: string
+                  format: decimal
+                  nullable: true
+                price_at_tx:
+                  type: string
+                  format: decimal
+                  nullable: true
+                category:
+                  type: string
+                  nullable: true
+                note:
+                  type: string
+                  nullable: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Transacción actualizada correctamente.
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      island: 650e8400-e29b-41d4-a716-446655440000
+                      type: expense
+                      date: '2026-01-15'
+                      amount: '150.00'
+                      quantity: null
+                      price_at_tx: null
+                      category: food
+                      note: Comida
+                      created_at: '2026-01-15T10:30:00Z'
+                      updated_at: '2026-01-16T10:30:00Z'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Datos inválidos o la transacción actualizada no cumple
+                  las reglas de la isla.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Transacción no encontrada o no pertenece al usuario autenticado.
+          description: ''
+    delete:
+      operationId: v1_transactions_destroy
+      description: |-
+        Elimina una transacción perteneciente al usuario autenticado.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Eliminar transacción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transactions
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                description: Transacción eliminada correctamente.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Transacción no encontrada o no pertenece al usuario autenticado.
+          description: ''
+  /api/v1/auth/email/verify/:
+    get:
+      operationId: v1_auth_email_verify_retrieve
+      description: |-
+        Este endpoint se utiliza como método de seguridad para confirmar tokens provenientes de un correo.
+
+        Como el caso de confirmar el correo de un usuario después de crearlo o modificar su correo.
+
+        Confirma la cuenta de un usuario mediante un token enviado por correo electrónico.
+
+        El token se envía como query parameter y se valida para activar la cuenta.
+
+        Este endpoint no requiere autenticación.
+
+
+
+        **Source:** `auth.views.user_views.VerifyEmailAPIView`
+      summary: Verificar Cuenta/EMAIL
+      parameters:
+      - in: query
+        name: token
+        schema:
+          type: string
+        description: Token de verificación enviado por correo
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: Usuario verificado con éxito.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiValidationError'
+              examples:
+                CamposInválidos:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: VALIDATION_ERROR
+                      source: auth.views.user_views.VerifyEmailAPIView
+                      context:
+                        field_name:
+                        - Mensaje de error del campo.
+                  summary: Campos inválidos
+          description: Error de validación — los campos varían según el endpoint
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RateLimitExcedido:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: RATE_LIMIT_EXCEEDED
+                      source: auth.views.user_views.VerifyEmailAPIView
+                      context:
+                        detail: Por favor, espera antes de intentar nuevamente.
+                        retry_after_seconds: 3600
+                  summary: Rate limit excedido
+          description: Demasiadas solicitudes — límite excedido
+  /api/v1/auth/login/:
+    post:
+      operationId: v1_auth_login_create
+      description: |-
+        Autenticación con **username o email** + contraseña.
+
+        Retorna access y refresh tokens.
+
+
+
+        **Source:** `auth.views.jwt_views.LoginView`
+      summary: Iniciar Sesión
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: chupapi muñaño
+                  description: Username o email del usuario
+                email:
+                  type: string
+                  example: usuario@example.com
+                  description: Email del usuario (alternativa a username)
+                password:
+                  type: string
+                  example: password123
+              required:
+              - password
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                AutenticacionExitosa:
+                  value:
+                    success: true
+                    errors: {}
+                    data:
+                      access: eyJhbGciO...
+                      refresh: eyJhbGci...
+                      user:
+                        id: ''
+                        username: ''
+                        email: ''
+                        first_name: ''
+                        last_name: ''
+                    message: null
+                  summary: Autenticacion Exitosa
+          description: Autenticacion Exitosa
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiValidationError'
+              examples:
+                CamposInválidos:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: VALIDATION_ERROR
+                      source: auth.views.jwt_views.LoginView
+                      context:
+                        field_name:
+                        - Mensaje de error del campo.
+                  summary: Campos inválidos
+          description: Error de validación — los campos varían según el endpoint
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                NoAutenticado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_AUTHENTICATED
+                      source: ''
+                      context:
+                        detail: Debes iniciar sesión para continuar. / Las Credenciales
+                          son incorrectas verificalas
+                  summary: No autenticado
+          description: No autenticado
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RateLimitExcedido:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: RATE_LIMIT_EXCEEDED
+                      source: auth.views.jwt_views.LoginView
+                      context:
+                        detail: Por favor, espera antes de intentar nuevamente.
+                        retry_after_seconds: 3600
+                  summary: Rate limit excedido
+          description: Demasiadas solicitudes — límite excedido
+  /api/v1/auth/logout/:
+    post:
+      operationId: v1_auth_logout_create
+      description: |-
+        Invalida el refresh token agregándolo a la blacklist.
+
+
+
+        **Source:** `auth.views.jwt_views.LogoutView`
+      summary: Cerrar sesión
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenBlacklistRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenBlacklistRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenBlacklistRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Logout exitoso
+        '400':
+          description: Token inválido
+  /api/v1/auth/oauth/facebook/:
+    post:
+      operationId: v1_auth_oauth_facebook_create
+      description: |+
+        Autentica o registra usuarios mediante Facebook.
+
+        El email se verifica automáticamente.
+
+      summary: Autenticación con Facebook
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleIDTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoogleIDTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoogleIDTokenRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                AutenticacionExitosa:
+                  value:
+                    success: true
+                    errors: {}
+                    data:
+                      access: eyJhbGciO...
+                      refresh: eyJhbGci...
+                      user:
+                        id: ''
+                        username: ''
+                        email: ''
+                        first_name: ''
+                        last_name: ''
+                    message: null
+                  summary: Autenticacion Exitosa
+          description: Autenticacion Exitosa
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                ErrorDeAutenticaciónOAuth:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: OAUTH_ERROR
+                      source: ''
+                      context:
+                        detail: Error en autenticación con proveedor externo.
+                  summary: Error de autenticación OAuth
+          description: Error de autenticación OAuth
+        '429':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/v1/auth/oauth/google/:
+    post:
+      operationId: v1_auth_oauth_google_create
+      description: |-
+        El endpoint espera recibir el id token. Autentica o registra usuarios mediante Google.
+
+        El email se verifica automáticamente.
+
+
+
+        **Source:** `auth.views.oauth_views.GoogleLoginView`
+      summary: Autenticación con Google
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleIDTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoogleIDTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoogleIDTokenRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                AutenticacionExitosa:
+                  value:
+                    success: true
+                    errors: {}
+                    data:
+                      access: eyJhbGciO...
+                      refresh: eyJhbGci...
+                      user:
+                        id: ''
+                        username: ''
+                        email: ''
+                        first_name: ''
+                        last_name: ''
+                    message: null
+                  summary: Autenticacion Exitosa
+          description: Autenticacion Exitosa
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                ErrorDeAutenticaciónOAuth:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: OAUTH_ERROR
+                      source: ''
+                      context:
+                        detail: Error en autenticación con proveedor externo.
+                  summary: Error de autenticación OAuth
+          description: Error de autenticación OAuth
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RateLimitExcedido:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: RATE_LIMIT_EXCEEDED
+                      source: auth.views.oauth_views.GoogleLoginView
+                      context:
+                        detail: Por favor, espera antes de intentar nuevamente.
+                        retry_after_seconds: 3600
+                  summary: Rate limit excedido
+          description: Demasiadas solicitudes — límite excedido
+  /api/v1/auth/password/change/:
+    post:
+      operationId: v1_auth_password_change_create
+      description: |-
+        Permite a usuarios autenticados cambiar su contraseña. Es necesario incluir su contraseña actual.
+
+        **Source:** `auth.views.password_views.ChangePasswordView`
+      summary: Cambiar contraseña
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Contraseña restablecida con éxito.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiValidationError'
+              examples:
+                CamposInválidos:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: VALIDATION_ERROR
+                      source: auth.views.password_views.ChangePasswordView
+                      context:
+                        field_name:
+                        - Mensaje de error del campo.
+                  summary: Campos inválidos
+          description: Error de validación — los campos varían según el endpoint
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                NoAutenticado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_AUTHENTICATED
+                      source: ''
+                      context:
+                        detail: Debes iniciar sesión para continuar. / Las Credenciales
+                          son incorrectas verificalas
+                  summary: No autenticado
+          description: No autenticado
+  /api/v1/auth/password/reset/:
+    post:
+      operationId: v1_auth_password_reset_create
+      description: |-
+        Solicita el restablecimiento de contraseña.
+
+        Por seguridad, no revela si el email existe.
+
+
+
+        **Source:** `auth.views.password_views.PasswordResetRequestView`
+      summary: Solicitar restablecimiento de contraseña
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: Si el correo existe, recibirás instrucciones.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiValidationError'
+              examples:
+                CamposInválidos:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: VALIDATION_ERROR
+                      source: auth.views.password_views.PasswordResetRequestView
+                      context:
+                        field_name:
+                        - Mensaje de error del campo.
+                  summary: Campos inválidos
+          description: Error de validación — los campos varían según el endpoint
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RateLimitExcedido:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: RATE_LIMIT_EXCEEDED
+                      source: auth.views.password_views.PasswordResetRequestView
+                      context:
+                        detail: Por favor, espera antes de intentar nuevamente.
+                        retry_after_seconds: 3600
+                  summary: Rate limit excedido
+          description: Demasiadas solicitudes — límite excedido
+  /api/v1/auth/password/reset/confirm/:
+    post:
+      operationId: v1_auth_password_reset_confirm_create
+      description: |-
+        Actualiza la contraseña usando el token de restablecimiento.
+
+
+
+        **Source:** `auth.views.password_views.PasswordResetConfirmView`
+      summary: Confirmar nueva contraseña
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetNewPasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetNewPasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetNewPasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: Contraseña restablecida con éxito.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiValidationError'
+              examples:
+                CamposInválidos:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: VALIDATION_ERROR
+                      source: auth.views.password_views.PasswordResetConfirmView
+                      context:
+                        field_name:
+                        - Mensaje de error del campo.
+                  summary: Campos inválidos
+          description: Error de validación — los campos varían según el endpoint
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RateLimitExcedido:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: RATE_LIMIT_EXCEEDED
+                      source: auth.views.password_views.PasswordResetConfirmView
+                      context:
+                        detail: Por favor, espera antes de intentar nuevamente.
+                        retry_after_seconds: 3600
+                  summary: Rate limit excedido
+          description: Demasiadas solicitudes — límite excedido
+  /api/v1/auth/register/:
+    post:
+      operationId: v1_auth_register_create
+      description: |-
+        Crea un nuevo usuario en estado inactivo.
+
+        Se envía un correo de verificación para activar la cuenta.
+
+        Accesible para cualquier usuario (registro público).
+
+
+
+        **Source:** `auth.views.user_views.RegistrationAPIView`
+      summary: Registrarse/Crear usuario
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '201':
+          description: Usuario creado. Revisa tu correo para verificar la cuenta.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiValidationError'
+              examples:
+                CamposInválidos:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: VALIDATION_ERROR
+                      source: auth.views.user_views.RegistrationAPIView
+                      context:
+                        field_name:
+                        - Mensaje de error del campo.
+                  summary: Campos inválidos
+          description: Error de validación — los campos varían según el endpoint
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                Conflicto:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: RESOURCE_CONFLICT
+                      source: ''
+                      context:
+                        detail: El recurso ya existe.
+          description: Conflicto
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RateLimitExcedido:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: RATE_LIMIT_EXCEEDED
+                      source: auth.views.user_views.RegistrationAPIView
+                      context:
+                        detail: Por favor, espera antes de intentar nuevamente.
+                        retry_after_seconds: 3600
+                  summary: Rate limit excedido
+          description: Demasiadas solicitudes — límite excedido
+  /api/v1/auth/resend-token/:
+    post:
+      operationId: v1_auth_resend_token_create
+      description: |-
+        Se reenvía al usuario el token para verificar su cuenta (activarla) por correo.
+
+        Pensado para ser utilizado en casos donde al usuario no le llegó este correo al crear su cuenta.
+
+
+
+        **Source:** `auth.views.user_views.ResendTokenAPIView`
+      summary: Reenviar correo de verificación
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Correo que se verificara
+              required:
+              - email
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: Correo de verificación enviado.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiValidationError'
+              examples:
+                CamposInválidos:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: VALIDATION_ERROR
+                      source: auth.views.user_views.ResendTokenAPIView
+                      context:
+                        field_name:
+                        - Mensaje de error del campo.
+                  summary: Campos inválidos
+          description: Error de validación — los campos varían según el endpoint
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RateLimitExcedido:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: RATE_LIMIT_EXCEEDED
+                      source: auth.views.user_views.ResendTokenAPIView
+                      context:
+                        detail: Por favor, espera antes de intentar nuevamente.
+                        retry_after_seconds: 3600
+                  summary: Rate limit excedido
+          description: Demasiadas solicitudes — límite excedido
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: v1_auth_token_refresh_create
+      description: |-
+        Genera un nuevo **access token** usando un **refresh token válido**.
+
+
+
+        **Source:** `auth.views.jwt_views.TokenRefreshView`
+      summary: Renovar access token
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses: {}
+  /api/v1/auth/token/verify/:
+    post:
+      operationId: v1_auth_token_verify_create
+      description: |2-
+
+
+        **Source:** `auth.views.jwt_views.TokenVerifyView`
+      summary: Verificar token JWT
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses: {}
+  /api/v1/portfolio/island-templates/:
+    get:
+      operationId: v1_portfolio_island_templates_list
+      description: |-
+        Obtiene el catálogo de plantillas de islas disponible para el usuario autenticado. Las plantillas son de solo lectura y son administradas mediante Django Admin. Permite filtrar por tipo de isla y buscar por nombre o símbolo.
+
+        **Source:** `portfolio.views.IslandTemplateViewSet`
+      summary: Listar plantillas de islas
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - portfolio
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      description: Listado paginado de plantillas de islas
+                      content:
+                        application/json:
+                          example:
+                            count: 2
+                            next: null
+                            previous: null
+                            results:
+                            - id: 550e8400-e29b-41d4-a716-446655440000
+                              name: Nu
+                              kind: cash
+                              symbol: null
+                              default_rate: '0.1000'
+                              logo_url: https://example.com/nu.png
+                              color: '#FFFFFF'
+          description: ''
+  /api/v1/portfolio/island-templates/{id}/:
+    get:
+      operationId: v1_portfolio_island_templates_retrieve
+      description: |-
+        Obtiene los detalles de una plantilla de isla específica por su identificador.
+
+        **Source:** `portfolio.views.IslandTemplateViewSet`
+      summary: Obtener plantilla de isla
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este island template.
+        required: true
+      tags:
+      - portfolio
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Detalles de la plantilla de isla
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      name: Nu
+                      kind: cash
+                      symbol: null
+                      default_rate: '0.1000'
+                      logo_url: https://example.com/nu.png
+                      color: '#FFFFFF'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+  /api/v1/portfolio/islands/:
+    get:
+      operationId: v1_portfolio_islands_list
+      description: |-
+        Obtiene las islas pertenecientes al usuario autenticado. Permite filtrar los resultados por módulo y tipo de isla.
+
+        **Source:** `portfolio.views.IslandViewSet`
+      summary: Listar islas
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - portfolio
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      description: Listado paginado de islas
+                      content:
+                        application/json:
+                          example:
+                            count: 1
+                            next: null
+                            previous: null
+                            results:
+                            - id: 550e8400-e29b-41d4-a716-446655440000
+                              module: 650e8400-e29b-41d4-a716-446655440000
+                              template: null
+                              name: Ahorro
+                              kind: cash
+                              currency: MXN
+                              symbol: null
+                              asset_type: null
+                              interest_type: compound
+                              annual_rate: '0.1000'
+                              color: '#FFFFFF'
+                              summary:
+                                deposited: '10000.00'
+                                currency: MXN
+                                value_native: '10500.00'
+                                value_base: '10500.00'
+                                interest_earned: '500.00'
+                              created_at: '2026-09-03T12:00:00Z'
+                              updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+    post:
+      operationId: v1_portfolio_islands_create
+      description: |-
+        Crea una nueva isla para el usuario autenticado. El usuario propietario se obtiene de la sesión.
+
+        **Uso de templates:** Si se proporciona un template, algunos valores pueden completarse automáticamente a partir de este: tipo, nombre, color y, según el tipo, tasa anual, símbolo y tipo de activo.
+
+        **Islas de efectivo:** Requieren una moneda.
+
+        **Islas de activos:** Requieren un símbolo y un tipo de activo (crypto o stock).
+
+        **Source:** `portfolio.views.IslandViewSet`
+      summary: Crear isla
+      tags:
+      - portfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                module:
+                  type: string
+                  format: uuid
+                  example: 650e8400-e29b-41d4-a716-446655440000
+                template:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  example: 750e8400-e29b-41d4-a716-446655440000
+                name:
+                  type: string
+                  example: Ahorro
+                kind:
+                  type: string
+                  enum:
+                  - cash
+                  - asset
+                  example: cash
+                currency:
+                  type: string
+                  nullable: true
+                  example: MXN
+                symbol:
+                  type: string
+                  nullable: true
+                  example: SPY
+                asset_type:
+                  type: string
+                  enum:
+                  - crypto
+                  - stock
+                  nullable: true
+                  example: stock
+                interest_type:
+                  type: string
+                  enum:
+                  - simple
+                  - compound
+                  nullable: true
+                  example: compound
+                annual_rate:
+                  type: string
+                  format: decimal
+                  nullable: true
+                  example: '0.1000'
+                color:
+                  type: string
+                  example: '#FFFFFF'
+              required:
+              - module
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                description: Isla creada correctamente
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      module: 650e8400-e29b-41d4-a716-446655440000
+                      template: null
+                      name: Ahorro
+                      kind: cash
+                      currency: MXN
+                      symbol: null
+                      asset_type: null
+                      interest_type: compound
+                      annual_rate: '0.1000'
+                      color: '#FFFFFF'
+                      summary:
+                        deposited: '0.00'
+                        currency: MXN
+                        value_native: '0.00'
+                        value_base: '0.00'
+                        interest_earned: '0.00'
+                      created_at: '2026-09-03T12:00:00Z'
+                      updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+  /api/v1/portfolio/islands/{id}/:
+    get:
+      operationId: v1_portfolio_islands_retrieve
+      description: |-
+        Obtiene los detalles de una isla perteneciente al usuario autenticado.
+
+        **Source:** `portfolio.views.IslandViewSet`
+      summary: Obtener isla
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - portfolio
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Detalles de la isla
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      module: 650e8400-e29b-41d4-a716-446655440000
+                      template: null
+                      name: Ahorro
+                      kind: cash
+                      currency: MXN
+                      symbol: null
+                      asset_type: null
+                      interest_type: compound
+                      annual_rate: '0.1000'
+                      color: '#FFFFFF'
+                      summary:
+                        deposited: '10000.00'
+                        currency: MXN
+                        value_native: '10500.00'
+                        value_base: '10500.00'
+                        interest_earned: '500.00'
+                      created_at: '2026-09-03T12:00:00Z'
+                      updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    put:
+      operationId: v1_portfolio_islands_update
+      description: |-
+        Actualiza completamente una isla perteneciente al usuario autenticado.
+
+        Para islas de efectivo se requiere una moneda. Para islas de activos se requiere un símbolo y un tipo de activo.
+
+        **Source:** `portfolio.views.IslandViewSet`
+      summary: Actualizar isla
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - portfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                module:
+                  type: string
+                  format: uuid
+                template:
+                  type: string
+                  format: uuid
+                  nullable: true
+                name:
+                  type: string
+                kind:
+                  type: string
+                  enum:
+                  - cash
+                  - asset
+                currency:
+                  type: string
+                  nullable: true
+                symbol:
+                  type: string
+                  nullable: true
+                asset_type:
+                  type: string
+                  enum:
+                  - crypto
+                  - stock
+                  nullable: true
+                interest_type:
+                  type: string
+                  enum:
+                  - simple
+                  - compound
+                  nullable: true
+                annual_rate:
+                  type: string
+                  format: decimal
+                  nullable: true
+                color:
+                  type: string
+              required:
+              - module
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Isla actualizada correctamente
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      module: 650e8400-e29b-41d4-a716-446655440000
+                      template: null
+                      name: Ahorro
+                      kind: cash
+                      currency: MXN
+                      symbol: null
+                      asset_type: null
+                      interest_type: compound
+                      annual_rate: '0.1000'
+                      color: '#FFFFFF'
+                      summary:
+                        deposited: '10000.00'
+                        currency: MXN
+                        value_native: '10500.00'
+                        value_base: '10500.00'
+                        interest_earned: '500.00'
+                      created_at: '2026-09-03T12:00:00Z'
+                      updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    patch:
+      operationId: v1_portfolio_islands_partial_update
+      description: |-
+        Actualiza parcialmente una isla perteneciente al usuario autenticado.
+
+        Las validaciones de efectivo y activos se aplican en función del tipo de isla resultante.
+
+        **Source:** `portfolio.views.IslandViewSet`
+      summary: Actualizar parcialmente una isla
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - portfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                module:
+                  type: string
+                  format: uuid
+                template:
+                  type: string
+                  format: uuid
+                  nullable: true
+                name:
+                  type: string
+                kind:
+                  type: string
+                  enum:
+                  - cash
+                  - asset
+                currency:
+                  type: string
+                  nullable: true
+                symbol:
+                  type: string
+                  nullable: true
+                asset_type:
+                  type: string
+                  enum:
+                  - crypto
+                  - stock
+                  nullable: true
+                interest_type:
+                  type: string
+                  enum:
+                  - simple
+                  - compound
+                  nullable: true
+                annual_rate:
+                  type: string
+                  format: decimal
+                  nullable: true
+                color:
+                  type: string
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Isla actualizada correctamente
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      module: 650e8400-e29b-41d4-a716-446655440000
+                      template: null
+                      name: Ahorro
+                      kind: cash
+                      currency: MXN
+                      symbol: null
+                      asset_type: null
+                      interest_type: compound
+                      annual_rate: '0.1000'
+                      color: '#FFFFFF'
+                      summary:
+                        deposited: '10000.00'
+                        currency: MXN
+                        value_native: '10500.00'
+                        value_base: '10500.00'
+                        interest_earned: '500.00'
+                      created_at: '2026-09-03T12:00:00Z'
+                      updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    delete:
+      operationId: v1_portfolio_islands_destroy
+      description: |-
+        Elimina una isla perteneciente al usuario autenticado.
+
+        **Source:** `portfolio.views.IslandViewSet`
+      summary: Eliminar isla
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - portfolio
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                description: Isla eliminada correctamente. No se devuelve contenido.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+  /api/v1/portfolio/modules/:
+    get:
+      operationId: v1_portfolio_modules_list
+      description: |-
+        Obtiene los módulos pertenecientes al usuario autenticado.
+
+        **Source:** `portfolio.views.ModuleViewSet`
+      summary: Listar módulos
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - portfolio
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      description: Listado paginado de módulos
+                      content:
+                        application/json:
+                          example:
+                            count: 1
+                            next: null
+                            previous: null
+                            results:
+                            - id: 550e8400-e29b-41d4-a716-446655440000
+                              name: Mis inversiones
+                              type: investment
+                              order: 0
+                              total_value: '25000.00'
+                              created_at: '2026-09-03T12:00:00Z'
+                              updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+    post:
+      operationId: v1_portfolio_modules_create
+      description: |-
+        Crea un nuevo módulo para el usuario autenticado. El usuario propietario se obtiene directamente de la sesión y no puede ser proporcionado por el cliente.
+
+        **Source:** `portfolio.views.ModuleViewSet`
+      summary: Crear módulo
+      tags:
+      - portfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Mis inversiones
+                type:
+                  type: string
+                  example: investment
+                order:
+                  type: integer
+                  example: 0
+              required:
+              - name
+              - type
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                description: Módulo creado correctamente
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      name: Mis inversiones
+                      type: investment
+                      order: 0
+                      total_value: '0.00'
+                      created_at: '2026-09-03T12:00:00Z'
+                      updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+  /api/v1/portfolio/modules/{id}/:
+    get:
+      operationId: v1_portfolio_modules_retrieve
+      description: |-
+        Obtiene los detalles de un módulo perteneciente al usuario autenticado.
+
+        **Source:** `portfolio.views.ModuleViewSet`
+      summary: Obtener módulo
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - portfolio
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Detalles del módulo
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      name: Mis inversiones
+                      type: investment
+                      order: 0
+                      total_value: '25000.00'
+                      created_at: '2026-09-03T12:00:00Z'
+                      updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    put:
+      operationId: v1_portfolio_modules_update
+      description: |-
+        Actualiza completamente un módulo perteneciente al usuario autenticado.
+
+        **Source:** `portfolio.views.ModuleViewSet`
+      summary: Actualizar módulo
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - portfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Mis inversiones
+                type:
+                  type: string
+                  example: investment
+                order:
+                  type: integer
+                  example: 0
+              required:
+              - name
+              - type
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Módulo actualizado correctamente
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      name: Mis inversiones
+                      type: investment
+                      order: 0
+                      total_value: '25000.00'
+                      created_at: '2026-09-03T12:00:00Z'
+                      updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    patch:
+      operationId: v1_portfolio_modules_partial_update
+      description: |-
+        Actualiza parcialmente un módulo perteneciente al usuario autenticado.
+
+        **Source:** `portfolio.views.ModuleViewSet`
+      summary: Actualizar parcialmente un módulo
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - portfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Mis inversiones
+                type:
+                  type: string
+                  example: investment
+                order:
+                  type: integer
+                  example: 0
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Módulo actualizado correctamente
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      name: Mis inversiones
+                      type: investment
+                      order: 0
+                      total_value: '25000.00'
+                      created_at: '2026-09-03T12:00:00Z'
+                      updated_at: '2026-09-03T12:00:00Z'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    delete:
+      operationId: v1_portfolio_modules_destroy
+      description: |-
+        Elimina un módulo perteneciente al usuario autenticado.
+
+        **Source:** `portfolio.views.ModuleViewSet`
+      summary: Eliminar módulo
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - portfolio
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                description: Módulo eliminado correctamente. No se devuelve contenido.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+  /api/v1/users/me/email/request-change:
+    post:
+      operationId: v1_users_me_email_request_change_create
+      description: |-
+        Se solicita la actualizacion del correo electronico del usuario
+
+        Se envía un correo de verificación para actualizar el nuevo correo, este correo llega el nuevo correo
+
+        Accesible para usuarios autenticados
+
+        **Code:** `auth.views.UserViewSet_post`
+      summary: Modificar Correo
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          description: Si el correo existe, recibirás instrucciones.
+components:
+  schemas:
+    ApiError:
+      type: object
+      description: Estructura para cualquier otro error (401, 403, 404, 500...).
+      properties:
+        success:
+          type: boolean
+          default: false
+        errors:
+          $ref: '#/components/schemas/ErrorsDetail'
+        data:
+          type: string
+          default: ''
+        message:
+          type: string
+          nullable: true
+      required:
+      - errors
+    ApiValidationError:
+      type: object
+      description: Estructura para errores de validación (campos inválidos).
+      properties:
+        success:
+          type: boolean
+          default: false
+        errors:
+          $ref: '#/components/schemas/ErrorsValidation'
+        data:
+          type: string
+          default: ''
+        message:
+          type: string
+          nullable: true
+      required:
+      - errors
+    ChangePasswordRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        confirm_new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - confirm_new_password
+      - current_password
+      - new_password
+    DetailContext:
+      type: object
+      description: Contexto para errores simples (no validación).
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    EmailUpdateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    ErrorsDetail:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/DetailContext'
+        code_error:
+          type: string
+      required:
+      - code_error
+      - context
+    ErrorsValidation:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/ValidationContext'
+        code_error:
+          type: string
+          description: Ruta del view que generó el error
+      required:
+      - code_error
+      - context
+    Goal:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        island:
+          type: integer
+        target_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+        frequency_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: e.g. 15 for biweekly
+        start_date:
+          type: string
+          format: date
+        active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - frequency_days
+      - id
+      - island
+      - start_date
+      - target_amount
+      - updated_at
+    GoalRequest:
+      type: object
+      properties:
+        island:
+          type: integer
+        target_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+        frequency_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: e.g. 15 for biweekly
+        start_date:
+          type: string
+          format: date
+        active:
+          type: boolean
+      required:
+      - frequency_days
+      - island
+      - start_date
+      - target_amount
+    GoogleIDTokenRequest:
+      type: object
+      properties:
+        access_token:
+          type: string
+        code:
+          type: string
+        id_token:
+          type: string
+          minLength: 1
+      required:
+      - id_token
+    PaginatedGoalList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Goal'
+    PasswordResetRequestRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    PatchedGoalRequest:
+      type: object
+      properties:
+        island:
+          type: integer
+        target_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,16}(?:\.\d{0,2})?$
+        frequency_days:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: e.g. 15 for biweekly
+        start_date:
+          type: string
+          format: date
+        active:
+          type: boolean
+    SetNewPasswordRequest:
+      type: object
+      properties:
+        uidb64:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 6
+        confirm_new_password:
+          type: string
+          writeOnly: true
+          minLength: 6
+      required:
+      - confirm_new_password
+      - new_password
+      - token
+      - uidb64
+    TokenBlacklistRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TokenVerifyRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
+    UserCreateRequest:
+      type: object
+      description: Serializer para creación de usuarios con contraseña
+      properties:
+        username:
+          type: string
+          minLength: 1
+          title: Nombre de usuario
+          description: 'Requerido. 150 carácteres como máximo. Únicamente letras,
+            dígitos y @/./+/-/_ '
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        confirm_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+      required:
+      - confirm_password
+      - email
+      - password
+      - username
+    ValidationContext:
+      type: object
+      description: |-
+        Contexto de errores de validación DRF.
+        Los keys son los campos del serializer que fallaron.
+      properties:
+        username:
+          type: array
+          items:
+            type: string
+        field_name:
+          type: array
+          items:
+            type: string
+          description: Representa cualquier campo del serializer (email, password,
+            etc.)
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: auth
+  description: Autenticación, providers y tokens JWT
+- name: users
+  description: Gestión de usuarios
+- name: goals
+  description: Gestion de objetivos

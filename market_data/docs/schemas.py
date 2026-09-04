@@ -1,4 +1,8 @@
-from drf_spectacular.utils import OpenApiParameter, OpenApiTypes
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    OpenApiTypes,
+)
 
 
 ASSET_SEARCH_SCHEMA = dict(
@@ -14,6 +18,7 @@ ASSET_SEARCH_SCHEMA = dict(
         'el `symbol` de Twelve Data como identificador del activo.\n\n'
         'La búsqueda devuelve como máximo 10 resultados.'
     ),
+
     parameters=[
         OpenApiParameter(
             name='q',
@@ -21,7 +26,16 @@ ASSET_SEARCH_SCHEMA = dict(
             location=OpenApiParameter.QUERY,
             required=True,
             description='Texto utilizado para buscar el activo.',
-            example='bitcoin',
+            examples=[
+                OpenApiExample(
+                    'Bitcoin',
+                    value='bitcoin',
+                ),
+                OpenApiExample(
+                    'Apple',
+                    value='apple',
+                ),
+            ],
         ),
         OpenApiParameter(
             name='asset_type',
@@ -30,9 +44,19 @@ ASSET_SEARCH_SCHEMA = dict(
             required=True,
             description='Tipo de activo que se desea buscar.',
             enum=['crypto', 'stock'],
-            example='crypto',
+            examples=[
+                OpenApiExample(
+                    'Criptomonedas',
+                    value='crypto',
+                ),
+                OpenApiExample(
+                    'Acciones',
+                    value='stock',
+                ),
+            ],
         ),
     ],
+
     responses={
         200: {
             'description': 'Resultados de búsqueda encontrados.',
