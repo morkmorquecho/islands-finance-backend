@@ -39,12 +39,31 @@ class GoalSerializer(serializers.ModelSerializer):
 
 
 class GoalCompletionMarkSerializer(serializers.Serializer):
-    """Payload to mark a specific expected period as fulfilled."""
+    """Payload to mark a specific expected period as fulfilled.
+
+    Two ways to use this:
+    - `transaction_id` given: link an existing deposit the user already
+      logged in the ledger (no new transaction is created — avoids double-
+      counting the money).
+    - `transaction_id` omitted: a new deposit Transaction is created
+      automatically for `actual_amount` (or the goal's target_amount if not
+      given) and then linked. This is what makes "marking complete" mean
+      something financially, instead of being just a label.
+    """
     expected_date = serializers.DateField()
     transaction_id = serializers.PrimaryKeyRelatedField(
-        queryset=Transaction.objects.all(), source="transaction",
+        queryset=Transaction.objects.none(), source="transaction",
         required=False, allow_null=True,
     )
     actual_amount = serializers.DecimalField(
         max_digits=18, decimal_places=2, required=False, allow_null=True
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request is not None:
+            # only allow linking a transaction that belongs to the user
+            self.fields["transaction_id"].queryset = Transaction.objects.filter(
+                user=request.user
+            )
