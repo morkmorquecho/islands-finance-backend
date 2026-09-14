@@ -5,799 +5,6 @@ info:
   description: App financiera basada en modulos e islas <submodulos> para darle seguimiento
     a los fondos del usuario y sus intereses asi como sus gastos
 paths:
-  /api/v1//goals/:
-    get:
-      operationId: v1_goals_list
-      description: |-
-        Obtiene las metas pertenecientes al usuario autenticado. Permite filtrar los resultados por isla y estado activo.
-
-        **Source:** `goals.views.GoalViewSet`
-      summary: Listar metas
-      parameters:
-      - in: query
-        name: active
-        schema:
-          type: boolean
-        description: Filtra las metas por su estado activo.
-      - in: query
-        name: island
-        schema:
-          type: integer
-        description: ID de la isla por la que se desea filtrar.
-      - name: page
-        required: false
-        in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
-        schema:
-          type: integer
-      tags:
-      - goals
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedGoalList'
-          description: ''
-    post:
-      operationId: v1_goals_create
-      description: |-
-        Crea una nueva meta para el usuario autenticado.
-
-        **Source:** `goals.views.GoalViewSet`
-      summary: Crear meta
-      tags:
-      - goals
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GoalRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/GoalRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/GoalRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Goal'
-          description: ''
-  /api/v1//goals/{id}/:
-    get:
-      operationId: v1_goals_retrieve
-      description: |-
-        Obtiene los detalles de una meta perteneciente al usuario autenticado.
-
-        **Source:** `goals.views.GoalViewSet`
-      summary: Obtener meta
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - goals
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Goal'
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Meta no encontrada.
-          description: ''
-    put:
-      operationId: v1_goals_update
-      description: |-
-        Actualiza completamente una meta perteneciente al usuario autenticado.
-
-        **Source:** `goals.views.GoalViewSet`
-      summary: Actualizar meta
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - goals
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GoalRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/GoalRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/GoalRequest'
-        required: true
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Goal'
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Meta no encontrada.
-          description: ''
-    patch:
-      operationId: v1_goals_partial_update
-      description: |-
-        Actualiza parcialmente una meta perteneciente al usuario autenticado.
-
-        **Source:** `goals.views.GoalViewSet`
-      summary: Actualizar parcialmente una meta
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - goals
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedGoalRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedGoalRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedGoalRequest'
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Goal'
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Meta no encontrada.
-          description: ''
-    delete:
-      operationId: v1_goals_destroy
-      description: |-
-        Elimina una meta perteneciente al usuario autenticado.
-
-        **Source:** `goals.views.GoalViewSet`
-      summary: Eliminar meta
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - goals
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '204':
-          content:
-            application/json:
-              schema:
-                description: Meta eliminada correctamente.
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Meta no encontrada.
-          description: ''
-  /api/v1//goals/{id}/completions/:
-    get:
-      operationId: v1_goals_completions_retrieve
-      description: |-
-        Obtiene todos los períodos esperados de la meta hasta la fecha actual. Los períodos faltantes se generan automáticamente antes de devolver la respuesta.
-
-        La respuesta incluye el porcentaje de cumplimiento de la meta y el listado de períodos generados o existentes.
-
-        **Source:** `goals.views.GoalViewSet`
-      summary: Listar cumplimientos de una meta
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - goals
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                description: Cumplimientos de la meta.
-                content:
-                  application/json:
-                    example:
-                      compliance_rate: 75.0
-                      results: []
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Meta no encontrada.
-          description: ''
-  /api/v1//goals/{id}/completions/mark/:
-    post:
-      operationId: v1_goals_completions_mark_create
-      description: |-
-        Mark a specific expected period as fulfilled, optionally
-        linking the real Transaction that satisfied it.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - v1
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          description: No response body
-  /api/v1//market-data/assets/search/:
-    get:
-      operationId: v1_market_data_assets_search_retrieve
-      description: |-
-        Busca activos por nombre, símbolo o texto relacionado según el tipo de activo seleccionado.
-
-        **Tipos de activo soportados:**
-        - `crypto`: busca criptomonedas mediante CoinGecko. La respuesta utiliza el `id` de CoinGecko como identificador del activo.
-        - `stock`: busca acciones mediante Twelve Data. La respuesta utiliza el `symbol` de Twelve Data como identificador del activo.
-
-        La búsqueda devuelve como máximo 10 resultados.
-
-        **Source:** `market_data.views.View.as_view.<locals>.view`
-      summary: Buscar activos financieros
-      parameters:
-      - in: query
-        name: asset_type
-        schema:
-          type: string
-          enum:
-          - crypto
-          - stock
-        description: Tipo de activo que se desea buscar.
-        required: true
-        examples:
-          Criptomonedas:
-            value: crypto
-          Acciones:
-            value: stock
-      - in: query
-        name: q
-        schema:
-          type: string
-        description: Texto utilizado para buscar el activo.
-        required: true
-        examples:
-          Bitcoin:
-            value: bitcoin
-          Apple:
-            value: apple
-      tags:
-      - market_data
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                description: Resultados de búsqueda encontrados.
-                content:
-                  application/json:
-                    examples:
-                      crypto:
-                        summary: Búsqueda de criptomonedas
-                        value:
-                        - id: bitcoin
-                          name: Bitcoin
-                          symbol: btc
-                          currency: USD
-                      stock:
-                        summary: Búsqueda de acciones
-                        value:
-                        - symbol: AMXL.MX
-                          name: America Movil
-                          exchange: BMV
-                          currency: MXN
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                description: Parámetros de búsqueda inválidos o faltantes.
-                content:
-                  application/json:
-                    example:
-                      detail: q and asset_type (crypto|stock) are required
-          description: ''
-  /api/v1//transactions/:
-    get:
-      operationId: v1_transactions_list
-      description: |-
-        Obtiene las transacciones pertenecientes al usuario autenticado. El usuario no puede consultar transacciones de otros usuarios.
-
-        **Filtros disponibles:**
-        - `island`: filtra por isla
-        - `type`: filtra por tipo de transacción
-        - `category`: filtra por categoría
-
-        **Ordenamiento disponible:**
-        - `date`
-        - `created_at`
-
-        También se pueden utilizar filtros por fecha como `date__gte` y `date__lte` para consultar un rango de transacciones.
-
-        **Source:** `ledger.views.TransactionViewSet`
-      summary: Listar transacciones
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
-        schema:
-          type: integer
-      tags:
-      - transactions
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - count
-                - results
-                properties:
-                  count:
-                    type: integer
-                    example: 123
-                  next:
-                    type: string
-                    nullable: true
-                    format: uri
-                    example: http://api.example.org/accounts/?page=4
-                  previous:
-                    type: string
-                    nullable: true
-                    format: uri
-                    example: http://api.example.org/accounts/?page=2
-                  results:
-                    type: array
-                    items:
-                      description: Lista paginada de transacciones.
-                      content:
-                        application/json:
-                          example:
-                            count: 2
-                            next: null
-                            previous: null
-                            results:
-                            - id: 550e8400-e29b-41d4-a716-446655440000
-                              island: 650e8400-e29b-41d4-a716-446655440000
-                              type: deposit
-                              date: '2026-01-15'
-                              amount: '1000.00'
-                              quantity: null
-                              price_at_tx: null
-                              category: null
-                              note: Depósito inicial
-                              created_at: '2026-01-15T10:30:00Z'
-                              updated_at: '2026-01-15T10:30:00Z'
-          description: ''
-    post:
-      operationId: v1_transactions_create
-      description: |-
-        Crea una nueva transacción asociada al usuario autenticado. El usuario solo puede crear transacciones sobre sus propias islas.
-
-        **Islas de efectivo (`cash`):**
-        - Solo aceptan `deposit`, `withdrawal` y `expense`.
-        - `amount` es requerido.
-        - `quantity` y `price_at_tx` no aplican.
-
-        **Islas de activos (`asset`):**
-        - Solo aceptan `buy` y `sell`.
-        - `quantity` y `price_at_tx` son requeridos.
-        - `amount` no aplica.
-
-        `category` solamente puede utilizarse cuando `type` es `expense`.
-
-        Las operaciones de retiro, gasto y venta se validan contra las tenencias o saldo disponible de la isla.
-
-        **Source:** `ledger.views.TransactionViewSet`
-      summary: Crear transacción
-      tags:
-      - transactions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                island:
-                  type: string
-                  format: uuid
-                  description: ID de una isla perteneciente al usuario autenticado.
-                type:
-                  type: string
-                  enum:
-                  - deposit
-                  - withdrawal
-                  - expense
-                  - buy
-                  - sell
-                date:
-                  type: string
-                  format: date
-                amount:
-                  type: string
-                  format: decimal
-                  nullable: true
-                quantity:
-                  type: string
-                  format: decimal
-                  nullable: true
-                price_at_tx:
-                  type: string
-                  format: decimal
-                  nullable: true
-                category:
-                  type: string
-                  nullable: true
-                note:
-                  type: string
-                  nullable: true
-              required:
-              - island
-              - type
-              - date
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                description: Transacción creada correctamente.
-                content:
-                  application/json:
-                    example:
-                      id: 550e8400-e29b-41d4-a716-446655440000
-                      island: 650e8400-e29b-41d4-a716-446655440000
-                      type: deposit
-                      date: '2026-01-15'
-                      amount: '1000.00'
-                      quantity: null
-                      price_at_tx: null
-                      category: null
-                      note: Depósito inicial
-                      created_at: '2026-01-15T10:30:00Z'
-                      updated_at: '2026-01-15T10:30:00Z'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                description: Datos inválidos o la transacción no cumple las reglas
-                  de la isla.
-          description: ''
-  /api/v1//transactions/{id}/:
-    get:
-      operationId: v1_transactions_retrieve
-      description: |-
-        Obtiene los detalles de una transacción perteneciente al usuario autenticado.
-
-        **Source:** `ledger.views.TransactionViewSet`
-      summary: Obtener transacción
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - transactions
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                description: Detalles de la transacción.
-                content:
-                  application/json:
-                    example:
-                      id: 550e8400-e29b-41d4-a716-446655440000
-                      island: 650e8400-e29b-41d4-a716-446655440000
-                      type: deposit
-                      date: '2026-01-15'
-                      amount: '1000.00'
-                      quantity: null
-                      price_at_tx: null
-                      category: null
-                      note: Depósito inicial
-                      created_at: '2026-01-15T10:30:00Z'
-                      updated_at: '2026-01-15T10:30:00Z'
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Transacción no encontrada o no pertenece al usuario autenticado.
-          description: ''
-    put:
-      operationId: v1_transactions_update
-      description: |-
-        Actualiza completamente una transacción perteneciente al usuario autenticado.
-
-        Se vuelven a aplicar las reglas de validación según el tipo de isla y de transacción. En operaciones de retiro, gasto o venta se verifica nuevamente que exista saldo o cantidad suficiente.
-
-        **Source:** `ledger.views.TransactionViewSet`
-      summary: Actualizar transacción
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - transactions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                island:
-                  type: string
-                  format: uuid
-                type:
-                  type: string
-                  enum:
-                  - deposit
-                  - withdrawal
-                  - expense
-                  - buy
-                  - sell
-                date:
-                  type: string
-                  format: date
-                amount:
-                  type: string
-                  format: decimal
-                  nullable: true
-                quantity:
-                  type: string
-                  format: decimal
-                  nullable: true
-                price_at_tx:
-                  type: string
-                  format: decimal
-                  nullable: true
-                category:
-                  type: string
-                  nullable: true
-                note:
-                  type: string
-                  nullable: true
-              required:
-              - island
-              - type
-              - date
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                description: Transacción actualizada correctamente.
-                content:
-                  application/json:
-                    example:
-                      id: 550e8400-e29b-41d4-a716-446655440000
-                      island: 650e8400-e29b-41d4-a716-446655440000
-                      type: expense
-                      date: '2026-01-15'
-                      amount: '150.00'
-                      quantity: null
-                      price_at_tx: null
-                      category: food
-                      note: Comida
-                      created_at: '2026-01-15T10:30:00Z'
-                      updated_at: '2026-01-16T10:30:00Z'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                description: Datos inválidos o la transacción actualizada no cumple
-                  las reglas de la isla.
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Transacción no encontrada o no pertenece al usuario autenticado.
-          description: ''
-    patch:
-      operationId: v1_transactions_partial_update
-      description: |-
-        Actualiza parcialmente una transacción perteneciente al usuario autenticado. Los campos omitidos conservan su valor actual.
-
-        Las reglas de validación de la transacción se vuelven a evaluar utilizando tanto los valores enviados como los valores existentes.
-
-        **Source:** `ledger.views.TransactionViewSet`
-      summary: Actualizar parcialmente una transacción
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - transactions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                island:
-                  type: string
-                  format: uuid
-                type:
-                  type: string
-                  enum:
-                  - deposit
-                  - withdrawal
-                  - expense
-                  - buy
-                  - sell
-                date:
-                  type: string
-                  format: date
-                amount:
-                  type: string
-                  format: decimal
-                  nullable: true
-                quantity:
-                  type: string
-                  format: decimal
-                  nullable: true
-                price_at_tx:
-                  type: string
-                  format: decimal
-                  nullable: true
-                category:
-                  type: string
-                  nullable: true
-                note:
-                  type: string
-                  nullable: true
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                description: Transacción actualizada correctamente.
-                content:
-                  application/json:
-                    example:
-                      id: 550e8400-e29b-41d4-a716-446655440000
-                      island: 650e8400-e29b-41d4-a716-446655440000
-                      type: expense
-                      date: '2026-01-15'
-                      amount: '150.00'
-                      quantity: null
-                      price_at_tx: null
-                      category: food
-                      note: Comida
-                      created_at: '2026-01-15T10:30:00Z'
-                      updated_at: '2026-01-16T10:30:00Z'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                description: Datos inválidos o la transacción actualizada no cumple
-                  las reglas de la isla.
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Transacción no encontrada o no pertenece al usuario autenticado.
-          description: ''
-    delete:
-      operationId: v1_transactions_destroy
-      description: |-
-        Elimina una transacción perteneciente al usuario autenticado.
-
-        **Source:** `ledger.views.TransactionViewSet`
-      summary: Eliminar transacción
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - transactions
-      security:
-      - jwtAuth: []
-      - bearerAuth: []
-      responses:
-        '204':
-          content:
-            application/json:
-              schema:
-                description: Transacción eliminada correctamente.
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                description: Transacción no encontrada o no pertenece al usuario autenticado.
-          description: ''
   /api/v1/auth/email/verify/:
     get:
       operationId: v1_auth_email_verify_retrieve
@@ -1620,6 +827,484 @@ paths:
       security:
       - bearerAuth: []
       responses: {}
+  /api/v1/goals/:
+    get:
+      operationId: v1_goals_list
+      description: |-
+        Obtiene las metas del usuario autenticado. Las metas se filtran automáticamente por el usuario actual. Permite filtrar por isla y por estado activo.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Listar metas
+      parameters:
+      - in: query
+        name: active
+        schema:
+          type: boolean
+        description: Filtra las metas según si están activas.
+        examples:
+          Activas:
+            value: true
+      - in: query
+        name: island
+        schema:
+          type: integer
+        description: ID de la isla por la que se desean filtrar las metas.
+        examples:
+          Ejemplo:
+            value: 1
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - goals
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGoalList'
+          description: ''
+    post:
+      operationId: v1_goals_create
+      description: |-
+        Crea una nueva meta asociada automáticamente al usuario autenticado. La isla seleccionada debe pertenecer al usuario que realiza la solicitud.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Crear meta
+      tags:
+      - goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+          description: ''
+  /api/v1/goals/{id}/:
+    get:
+      operationId: v1_goals_retrieve
+      description: |-
+        Obtiene una meta específica del usuario autenticado. La meta debe pertenecer al usuario que realiza la solicitud.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Obtener meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    put:
+      operationId: v1_goals_update
+      description: |-
+        Actualiza completamente una meta del usuario autenticado. La meta debe pertenecer al usuario que realiza la solicitud.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Actualizar meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    patch:
+      operationId: v1_goals_partial_update
+      description: |-
+        Actualiza parcialmente una meta del usuario autenticado. Solo se modifican los campos enviados en la solicitud.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Actualizar parcialmente una meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGoalRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+    delete:
+      operationId: v1_goals_destroy
+      description: |-
+        Elimina una meta del usuario autenticado.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Eliminar meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+  /api/v1/goals/{id}/completions/:
+    get:
+      operationId: v1_goals_completions_retrieve
+      description: |-
+        Obtiene los períodos esperados de una meta hasta la fecha actual. Los registros faltantes se generan automáticamente antes de devolver la información.
+
+        La respuesta incluye la tasa de cumplimiento y la lista de períodos de cumplimiento ordenados por fecha esperada.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Obtener cumplimientos de una meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Cumplimientos de la meta.
+                content:
+                  application/json:
+                    example:
+                      compliance_rate: 0.75
+                      results:
+                      - id: 1
+                        goal: 10
+                        expected_date: '2026-09-01'
+                        completed_date: '2026-09-01'
+                        actual_amount: '1000.00'
+                        transaction: 25
+                      - id: 2
+                        goal: 10
+                        expected_date: '2026-09-08'
+                        completed_date: null
+                        actual_amount: null
+                        transaction: null
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+  /api/v1/goals/{id}/completions/mark/:
+    post:
+      operationId: v1_goals_completions_mark_create
+      description: |-
+        Marca como cumplido un período específico de una meta.
+
+        El período indicado por `expected_date` se crea automáticamente si todavía no existe. Al marcarlo como cumplido, se establece la fecha actual como `completed_date`.
+
+        Opcionalmente se puede asociar una transacción y proporcionar el monto real cumplido. Si no se proporciona `actual_amount` pero se proporciona una transacción, se utiliza automáticamente el monto de dicha transacción.
+
+        **Source:** `goals.views.GoalViewSet`
+      summary: Marcar cumplimiento de una meta
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - goals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expected_date:
+                  type: string
+                  format: date
+                  description: Fecha del período esperado que se desea marcar como
+                    cumplido.
+                  example: '2026-09-01'
+                transaction_id:
+                  type: integer
+                  nullable: true
+                  description: ID de la transacción que cumplió la meta. Es opcional.
+                  example: 25
+                actual_amount:
+                  type: number
+                  format: decimal
+                  nullable: true
+                  description: Monto realmente cumplido. Es opcional.
+                  example: '1000.00'
+              required:
+              - expected_date
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Período marcado como cumplido.
+                content:
+                  application/json:
+                    example:
+                      id: 1
+                      goal: 10
+                      expected_date: '2026-09-01'
+                      completed_date: '2026-09-04'
+                      actual_amount: '1000.00'
+                      transaction: 25
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Datos de entrada inválidos.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+              examples:
+                RecursoNoEncontrado:
+                  value:
+                    success: false
+                    data: null
+                    message: null
+                    errors:
+                      code: NOT_FOUND
+                      source: ''
+                      context:
+                        detail: Recurso no encontrado.
+                  summary: Recurso no encontrado
+          description: Recurso no encontrado
+  /api/v1/market-data/assets/search/:
+    get:
+      operationId: v1_market_data_assets_search_retrieve
+      description: |-
+        Busca activos por nombre, símbolo o texto relacionado según el tipo de activo seleccionado.
+
+        **Tipos de activo soportados:**
+        - `crypto`: busca criptomonedas mediante CoinGecko. La respuesta utiliza el `id` de CoinGecko como identificador del activo.
+        - `stock`: busca acciones mediante Twelve Data. La respuesta utiliza el `symbol` de Twelve Data como identificador del activo.
+
+        La búsqueda devuelve como máximo 10 resultados.
+
+        **Source:** `market_data.views.View.as_view.<locals>.view`
+      summary: Buscar activos financieros
+      parameters:
+      - in: query
+        name: asset_type
+        schema:
+          type: string
+          enum:
+          - crypto
+          - stock
+        description: Tipo de activo que se desea buscar.
+        required: true
+        examples:
+          Criptomonedas:
+            value: crypto
+          Acciones:
+            value: stock
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Texto utilizado para buscar el activo.
+        required: true
+        examples:
+          Bitcoin:
+            value: bitcoin
+          Apple:
+            value: apple
+      tags:
+      - market_data
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Resultados de búsqueda encontrados.
+                content:
+                  application/json:
+                    examples:
+                      crypto:
+                        summary: Búsqueda de criptomonedas
+                        value:
+                        - id: bitcoin
+                          name: Bitcoin
+                          symbol: btc
+                          currency: USD
+                      stock:
+                        summary: Búsqueda de acciones
+                        value:
+                        - symbol: AMXL.MX
+                          name: America Movil
+                          exchange: BMV
+                          currency: MXN
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Parámetros de búsqueda inválidos o faltantes.
+                content:
+                  application/json:
+                    example:
+                      detail: q and asset_type (crypto|stock) are required
+          description: ''
   /api/v1/portfolio/island-templates/:
     get:
       operationId: v1_portfolio_island_templates_list
@@ -1629,6 +1314,16 @@ paths:
         **Source:** `portfolio.views.IslandTemplateViewSet`
       summary: Listar plantillas de islas
       parameters:
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - asset
+          - cash
+        description: |-
+          * `cash` - Cash
+          * `asset` - Asset
       - name: page
         required: false
         in: query
@@ -2592,6 +2287,445 @@ paths:
                         detail: Recurso no encontrado.
                   summary: Recurso no encontrado
           description: Recurso no encontrado
+  /api/v1/transactions/:
+    get:
+      operationId: v1_transactions_list
+      description: |-
+        Obtiene las transacciones pertenecientes al usuario autenticado. El usuario no puede consultar transacciones de otros usuarios.
+
+        **Filtros disponibles:**
+        - `island`: filtra por isla
+        - `type`: filtra por tipo de transacción
+        - `category`: filtra por categoría
+
+        **Ordenamiento disponible:**
+        - `date`
+        - `created_at`
+
+        También se pueden utilizar filtros por fecha como `date__gte` y `date__lte` para consultar un rango de transacciones.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Listar transacciones
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - transactions
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      description: Lista paginada de transacciones.
+                      content:
+                        application/json:
+                          example:
+                            count: 2
+                            next: null
+                            previous: null
+                            results:
+                            - id: 550e8400-e29b-41d4-a716-446655440000
+                              island: 650e8400-e29b-41d4-a716-446655440000
+                              type: deposit
+                              date: '2026-01-15'
+                              amount: '1000.00'
+                              quantity: null
+                              price_at_tx: null
+                              category: null
+                              note: Depósito inicial
+                              created_at: '2026-01-15T10:30:00Z'
+                              updated_at: '2026-01-15T10:30:00Z'
+          description: ''
+    post:
+      operationId: v1_transactions_create
+      description: |-
+        Crea una nueva transacción asociada al usuario autenticado. El usuario solo puede crear transacciones sobre sus propias islas.
+
+        **Islas de efectivo (`cash`):**
+        - Solo aceptan `deposit`, `withdrawal` y `expense`.
+        - `amount` es requerido.
+        - `quantity` y `price_at_tx` no aplican.
+
+        **Islas de activos (`asset`):**
+        - Solo aceptan `buy` y `sell`.
+        - `quantity` y `price_at_tx` son requeridos.
+        - `amount` no aplica.
+
+        `category` solamente puede utilizarse cuando `type` es `expense`.
+
+        Las operaciones de retiro, gasto y venta se validan contra las tenencias o saldo disponible de la isla.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Crear transacción
+      tags:
+      - transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                island:
+                  type: string
+                  format: uuid
+                  description: ID de una isla perteneciente al usuario autenticado.
+                type:
+                  type: string
+                  enum:
+                  - deposit
+                  - withdrawal
+                  - expense
+                  - buy
+                  - sell
+                date:
+                  type: string
+                  format: date
+                amount:
+                  type: string
+                  format: decimal
+                  nullable: true
+                quantity:
+                  type: string
+                  format: decimal
+                  nullable: true
+                price_at_tx:
+                  type: string
+                  format: decimal
+                  nullable: true
+                category:
+                  type: string
+                  nullable: true
+                note:
+                  type: string
+                  nullable: true
+              required:
+              - island
+              - type
+              - date
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                description: Transacción creada correctamente.
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      island: 650e8400-e29b-41d4-a716-446655440000
+                      type: deposit
+                      date: '2026-01-15'
+                      amount: '1000.00'
+                      quantity: null
+                      price_at_tx: null
+                      category: null
+                      note: Depósito inicial
+                      created_at: '2026-01-15T10:30:00Z'
+                      updated_at: '2026-01-15T10:30:00Z'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Datos inválidos o la transacción no cumple las reglas
+                  de la isla.
+          description: ''
+  /api/v1/transactions/{id}/:
+    get:
+      operationId: v1_transactions_retrieve
+      description: |-
+        Obtiene los detalles de una transacción perteneciente al usuario autenticado.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Obtener transacción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transactions
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Detalles de la transacción.
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      island: 650e8400-e29b-41d4-a716-446655440000
+                      type: deposit
+                      date: '2026-01-15'
+                      amount: '1000.00'
+                      quantity: null
+                      price_at_tx: null
+                      category: null
+                      note: Depósito inicial
+                      created_at: '2026-01-15T10:30:00Z'
+                      updated_at: '2026-01-15T10:30:00Z'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Transacción no encontrada o no pertenece al usuario autenticado.
+          description: ''
+    put:
+      operationId: v1_transactions_update
+      description: |-
+        Actualiza completamente una transacción perteneciente al usuario autenticado.
+
+        Se vuelven a aplicar las reglas de validación según el tipo de isla y de transacción. En operaciones de retiro, gasto o venta se verifica nuevamente que exista saldo o cantidad suficiente.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Actualizar transacción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                island:
+                  type: string
+                  format: uuid
+                type:
+                  type: string
+                  enum:
+                  - deposit
+                  - withdrawal
+                  - expense
+                  - buy
+                  - sell
+                date:
+                  type: string
+                  format: date
+                amount:
+                  type: string
+                  format: decimal
+                  nullable: true
+                quantity:
+                  type: string
+                  format: decimal
+                  nullable: true
+                price_at_tx:
+                  type: string
+                  format: decimal
+                  nullable: true
+                category:
+                  type: string
+                  nullable: true
+                note:
+                  type: string
+                  nullable: true
+              required:
+              - island
+              - type
+              - date
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Transacción actualizada correctamente.
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      island: 650e8400-e29b-41d4-a716-446655440000
+                      type: expense
+                      date: '2026-01-15'
+                      amount: '150.00'
+                      quantity: null
+                      price_at_tx: null
+                      category: food
+                      note: Comida
+                      created_at: '2026-01-15T10:30:00Z'
+                      updated_at: '2026-01-16T10:30:00Z'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Datos inválidos o la transacción actualizada no cumple
+                  las reglas de la isla.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Transacción no encontrada o no pertenece al usuario autenticado.
+          description: ''
+    patch:
+      operationId: v1_transactions_partial_update
+      description: |-
+        Actualiza parcialmente una transacción perteneciente al usuario autenticado. Los campos omitidos conservan su valor actual.
+
+        Las reglas de validación de la transacción se vuelven a evaluar utilizando tanto los valores enviados como los valores existentes.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Actualizar parcialmente una transacción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                island:
+                  type: string
+                  format: uuid
+                type:
+                  type: string
+                  enum:
+                  - deposit
+                  - withdrawal
+                  - expense
+                  - buy
+                  - sell
+                date:
+                  type: string
+                  format: date
+                amount:
+                  type: string
+                  format: decimal
+                  nullable: true
+                quantity:
+                  type: string
+                  format: decimal
+                  nullable: true
+                price_at_tx:
+                  type: string
+                  format: decimal
+                  nullable: true
+                category:
+                  type: string
+                  nullable: true
+                note:
+                  type: string
+                  nullable: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: Transacción actualizada correctamente.
+                content:
+                  application/json:
+                    example:
+                      id: 550e8400-e29b-41d4-a716-446655440000
+                      island: 650e8400-e29b-41d4-a716-446655440000
+                      type: expense
+                      date: '2026-01-15'
+                      amount: '150.00'
+                      quantity: null
+                      price_at_tx: null
+                      category: food
+                      note: Comida
+                      created_at: '2026-01-15T10:30:00Z'
+                      updated_at: '2026-01-16T10:30:00Z'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                description: Datos inválidos o la transacción actualizada no cumple
+                  las reglas de la isla.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Transacción no encontrada o no pertenece al usuario autenticado.
+          description: ''
+    delete:
+      operationId: v1_transactions_destroy
+      description: |-
+        Elimina una transacción perteneciente al usuario autenticado.
+
+        **Source:** `ledger.views.TransactionViewSet`
+      summary: Eliminar transacción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transactions
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                description: Transacción eliminada correctamente.
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: Transacción no encontrada o no pertenece al usuario autenticado.
+          description: ''
   /api/v1/users/me/email/request-change:
     post:
       operationId: v1_users_me_email_request_change_create
