@@ -26,7 +26,5 @@ class IsAdminOrAuthenticatedCreate(BasePermission):
 
 class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        return obj.get_owner_id() == request.user.id
+        return obj.user_id == request.user.id
 
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated)

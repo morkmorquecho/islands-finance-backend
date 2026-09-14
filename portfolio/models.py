@@ -73,6 +73,10 @@ class Island(BaseModel):
         SIMPLE = "simple", "Simple"
         COMPOUND = "compound", "Compound"
 
+    class Currency(models.TextChoices):
+        MXN = "MXN", "MXN"
+        USD = "USD", "USD"
+
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="islands")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                               related_name="islands")
@@ -80,11 +84,12 @@ class Island(BaseModel):
                                   null=True, blank=True, related_name="islands")
     name = models.CharField(max_length=100)
     kind = models.CharField(max_length=10, choices=Kind.choices)
-    currency = models.CharField(max_length=10, null=True, blank=True,
-                                help_text="Native currency for display: cash islands "
-                                        "(user-set, e.g. MXN/USD) or asset islands "
-                                        "(from provider, e.g. USD for crypto/US stocks, "
-                                        "MXN for BMV)")
+    currency = models.CharField(max_length=3, choices=Currency.choices,
+                                 null=True, blank=True,
+                                 help_text="Native currency for display: cash islands "
+                                           "(user-set, e.g. MXN/USD) or asset islands "
+                                           "(from provider, e.g. USD for crypto/US stocks, "
+                                           "MXN for BMV)")
     symbol = models.CharField(max_length=20, null=True, blank=True,
                                help_text="Asset islands, provider-ready symbol, "
                                          "e.g. 'bitcoin' (CoinGecko id) or 'SPY' (Twelve Data ticker)")
@@ -103,6 +108,10 @@ class Island(BaseModel):
             models.CheckConstraint(
                 check=~models.Q(kind="asset") | models.Q(asset_type__isnull=False),
                 name="asset_island_requires_asset_type",
+            ),
+            models.CheckConstraint(
+                check=models.Q(currency__isnull=True) | models.Q(currency__in=["MXN", "USD"]),
+                name="currency_must_be_mxn_or_usd",
             ),
         ]
 

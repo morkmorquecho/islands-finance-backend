@@ -25,7 +25,6 @@ from .services import sync_completions, compliance_rate
     completions=GOAL_COMPLETIONS_SCHEMA,
     mark_completion=GOAL_MARK_COMPLETION_SCHEMA,
 )
-
 class GoalViewSet(viewsets.ModelViewSet):
     serializer_class = GoalSerializer
     permission_classes = [IsAuthenticated, IsOwner]

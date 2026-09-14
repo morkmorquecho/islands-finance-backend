@@ -58,11 +58,11 @@ class IslandViewSet(viewsets.ModelViewSet):
     serializer_class = IslandSerializer
     permission_classes = [IsAuthenticated, IsOwner]
     filterset_fields = ["module", "kind"]
- 
+
     def get_queryset(self):
         return (
             Island.objects
             .filter(user=self.request.user)
             .select_related("module", "template")
-            .prefetch_related("transactions")  # avoid N+1 when computing summary
+            .prefetch_related("transactions")
         )
