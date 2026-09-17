@@ -57,8 +57,44 @@ class ModuleAdmin(BaseAdmin):
     )
 
 
+
 @admin.register(Island)
 class IslandAdmin(BaseAdmin):
+    list_display = (
+        "name",
+        "module",
+        "user",
+        "template",
+        "kind",
+        "currency",
+        "asset_type",
+        "interest_type",
+        "annual_rate",
+        "is_system",
+    )
+
+    search_fields = (
+        "name",
+        "symbol",
+        "user__username",
+        "user__email",
+        "module__name",
+        "template__name",
+    )
+
+    list_filter = (
+        "kind",
+        "asset_type",
+        "interest_type",
+        "currency",
+        "is_system",
+    )
+
+    autocomplete_fields = (
+        "module",
+        "user",
+        "template",
+    )
     list_display = (
         "name",
         "kind",

@@ -50,7 +50,7 @@ def seed_island_templates(apps, schema_editor):
         {
             "name": "Bitcoin",
             "kind": "asset",
-            "symbol": "BTC",
+            "symbol": "bitcoin",
             "default_rate": None,
             "logo_url": None,
             "color": "#F7931A",

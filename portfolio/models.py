@@ -126,7 +126,7 @@ class Island(BaseModel):
     annual_rate = models.DecimalField(max_digits=6, decimal_places=4, null=True, blank=True,
                                        help_text="Current annual rate, cash islands only")
     color = models.CharField(max_length=7, default="#0EA5E9")
-
+    mic_code = models.CharField(max_length=20, blank=True, null=True)
     is_system = models.BooleanField(
         default=False,
         editable=False,

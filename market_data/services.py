@@ -17,27 +17,22 @@ _PROVIDERS = {
     "stock": twelvedata.get_price,
 }
 
-
-def get_price(symbol: str, asset_type: str) -> Decimal:
-    """Looks up the current price for `symbol`, dispatching to the right
-    provider based on `asset_type` (island.asset_type — no guessing).
-
-    Returns Decimal("0") on any failure — same contract as the original
-    placeholder: 0 means "price unavailable", not a real zero value. The
-    frontend is responsible for treating 0 as unavailable.
-    """
+def get_price(symbol: str, asset_type: str, mic_code: str | None = None) -> Decimal:
     provider = _PROVIDERS.get(asset_type)
     if provider is None:
         logger.error("get_price called with unknown asset_type=%s", asset_type)
         return Decimal("0")
 
-    cache_key = f"market_data:price:{asset_type}:{symbol}"
+    cache_key = f"market_data:price:{asset_type}:{symbol}:{mic_code or ''}"
     cached = cache.get(cache_key)
     if cached is not None:
         return Decimal(str(cached))
 
     try:
-        price = provider(symbol)
+        if asset_type == "stock":
+            price = provider(symbol, mic_code)
+        else:
+            price = provider(symbol)
     except MarketDataError as exc:
         logger.warning("Price lookup failed for %s (%s): %s", symbol, asset_type, exc)
         return Decimal("0")

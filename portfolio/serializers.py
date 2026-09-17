@@ -20,24 +20,33 @@ class IslandTemplateSerializer(serializers.ModelSerializer):
 
 class ModuleSerializer(serializers.ModelSerializer):
     total_value = serializers.SerializerMethodField()
+    has_unavailable_prices = serializers.SerializerMethodField()
 
     class Meta:
         model = Module
         fields = ["id", "name", "type", "order", "total_value",
-                  "created_at", "updated_at"]
-        read_only_fields = ["id", "total_value", "created_at", "updated_at", "is_system"]
+                  "has_unavailable_prices", "created_at", "updated_at"]
+        read_only_fields = ["id", "total_value", "has_unavailable_prices",
+                            "created_at", "updated_at", "is_system"]
 
     def get_total_value(self, obj):
-        return sum(
-            (get_island_summary(island)["value_base"] for island in obj.islands.all()),
-            start=Decimal("0"),
+        total = Decimal("0")
+        for island in obj.islands.all():
+            value = get_island_summary(island).get("value_base")
+            if value is not None:
+                total += value
+        return total
+
+    def get_has_unavailable_prices(self, obj):
+        return any(
+            get_island_summary(island).get("price_unavailable")
+            for island in obj.islands.all()
+            if island.kind == "asset"
         )
-    
+
     def create(self, validated_data):
-        # user is never trusted from the client, always taken from the request
         validated_data["user"] = self.context["request"].user
         return super().create(validated_data)
-
 
 class IslandSerializer(serializers.ModelSerializer):
     module = serializers.PrimaryKeyRelatedField(queryset=Module.objects.none())
@@ -56,7 +65,7 @@ class IslandSerializer(serializers.ModelSerializer):
         fields = [
             "id", "module", "template", "name", "kind", "currency", "symbol",
             "asset_type", "interest_type", "annual_rate", "color", "summary",
-            "created_at", "updated_at",
+            "created_at", "updated_at","mic_code",
         ]
         read_only_fields = ["id", "summary", "created_at", "updated_at", "is_system"]
 
