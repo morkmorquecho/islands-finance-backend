@@ -1,3 +1,4 @@
+from time import timezone
 import uuid
 from django.conf import settings
 from django.db import models
@@ -36,26 +37,50 @@ class IslandTemplate(BaseModel):
 
 
 class Module(BaseModel):
-    """Top-level grouping: savings, emergency fund, investments, leisure, expenses."""
-
     class Type(models.TextChoices):
         SAVINGS = "savings", "Savings"
         EMERGENCY = "emergency", "Emergency"
         INVESTMENT = "investment", "Investment"
         LEISURE = "leisure", "Leisure"
         EXPENSES = "expenses", "Expenses"
+        CASH = "cash", "Cash"
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                              related_name="modules")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="modules",
+    )
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=20, choices=Type.choices)
     order = models.PositiveIntegerField(default=0)
+
+    is_system = models.BooleanField(
+        default=False,
+        editable=False,
+    )
 
     class Meta:
         ordering = ["order", "created_at"]
 
     def __str__(self):
         return f"{self.name} ({self.user_id})"
+
+    def delete(self, using=None, keep_parents=False, hard=False):
+        if hard:
+            return super().delete(using=using, keep_parents=keep_parents)
+        self.is_active = False
+        self.deleted_at = timezone.now()
+        self.save(using=using)
+        self.islands.filter(is_active=True).update(
+            is_active=False, deleted_at=self.deleted_at
+        )
+
+    def restore(self):
+        self.is_active = True
+        self.save()
+        self.islands.filter(deleted_at=self.deleted_at).update(
+            is_active=True, deleted_at=None
+        )
 
 
 class Island(BaseModel):
@@ -102,6 +127,11 @@ class Island(BaseModel):
                                        help_text="Current annual rate, cash islands only")
     color = models.CharField(max_length=7, default="#0EA5E9")
 
+    is_system = models.BooleanField(
+        default=False,
+        editable=False,
+    )
+
     class Meta:
         ordering = ["created_at"]
         constraints = [
@@ -114,6 +144,7 @@ class Island(BaseModel):
                 name="currency_must_be_mxn_or_usd",
             ),
         ]
+
 
     def __str__(self):
         return f"{self.name} [{self.kind}]"

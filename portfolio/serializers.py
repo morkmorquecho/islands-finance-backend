@@ -25,7 +25,7 @@ class ModuleSerializer(serializers.ModelSerializer):
         model = Module
         fields = ["id", "name", "type", "order", "total_value",
                   "created_at", "updated_at"]
-        read_only_fields = ["id", "total_value", "created_at", "updated_at"]
+        read_only_fields = ["id", "total_value", "created_at", "updated_at", "is_system"]
 
     def get_total_value(self, obj):
         return sum(
@@ -58,7 +58,7 @@ class IslandSerializer(serializers.ModelSerializer):
             "asset_type", "interest_type", "annual_rate", "color", "summary",
             "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "summary", "created_at", "updated_at"]
+        read_only_fields = ["id", "summary", "created_at", "updated_at", "is_system"]
 
     def get_summary(self, obj):
         return get_island_summary(obj)
