@@ -28,7 +28,6 @@ def calculate_cash_island_value(island, as_of: date = None) -> dict:
         "interest_earned": value - deposited,
     }
 
-
 def calculate_asset_island_value(island, as_of: date = None) -> dict:
     from market_data.services import get_price
 
@@ -45,9 +44,21 @@ def calculate_asset_island_value(island, as_of: date = None) -> dict:
             quantity -= tx.quantity
             cost_basis -= tx.quantity * tx.price_at_tx
 
-    price = get_price(island.symbol, island.asset_type) if quantity > 0 else Decimal("0")
-    value_native = quantity * price
-    value_base = convert_to_base(value_native, island.currency)
+    price = (
+        get_price(island.symbol, island.asset_type, getattr(island, "mic_code", None))
+        if quantity > 0
+        else Decimal("0")
+    )
+    price_unavailable = quantity > 0 and price == 0   # ← primero se define
+
+    if price_unavailable:                             # ← luego se usa
+        value_native = None
+        value_base = None
+        gain_loss = None
+    else:
+        value_native = quantity * price
+        value_base = convert_to_base(value_native, island.currency)
+        gain_loss = value_native - cost_basis
 
     return {
         "quantity": quantity,
@@ -55,9 +66,9 @@ def calculate_asset_island_value(island, as_of: date = None) -> dict:
         "value_native": value_native,
         "value_base": value_base,
         "cost_basis": cost_basis,
-        "gain_loss": value_native - cost_basis,
+        "gain_loss": gain_loss,
+        "price_unavailable": price_unavailable,
     }
-
 
 def get_island_summary(island, as_of: date = None) -> dict:
     """Single entrypoint — picks cash vs asset logic based on island.kind."""
