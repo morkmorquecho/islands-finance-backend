@@ -26,6 +26,14 @@ class Transaction(BaseModel):
         SUBSCRIPTIONS = "subscriptions", "Subscriptions"
         HOUSING = "housing", "Housing"
         LEISURE = "leisure", "Leisure"
+        HEALTH = "health", "Salud"
+        CLOTHING = "clothing", "Ropa"
+        TRAVEL = "travel", "Viajes"
+        EDUCATION = "education", "Educación"
+        FINANCE = "finance", "Finanzas"
+        FAMILY_EVENTS = "family_events", "Eventos Familiares"
+        TAXES = "taxes", "Impuestos"
+        WORK = "work", "Trabajo"
         OTHER = "other", "Other"
 
     island = models.ForeignKey(Island, on_delete=models.CASCADE, related_name="transactions")
