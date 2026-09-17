@@ -1,3 +1,5 @@
+from decouple import config
+
 import requests
 from django.conf import settings
 
@@ -6,13 +8,14 @@ from market_data.exceptions import PriceNotFoundError, ProviderUnavailableError
 BASE_URL = "https://api.twelvedata.com/price"
 TIMEOUT = 5
 
+TWELVEDATA_API_KEY = config("TWELVEDATA_API_KEY")
 
 def get_price(symbol: str) -> float:
     """`symbol` is a ticker, e.g. "SPY", "VOO", or "AMXL.MX" for BMV."""
     try:
         response = requests.get(
             BASE_URL,
-            params={"symbol": symbol, "apikey": settings.TWELVEDATA_API_KEY},
+            params={"symbol": symbol, "apikey":TWELVEDATA_API_KEY},
             timeout=TIMEOUT,
         )
         response.raise_for_status()
