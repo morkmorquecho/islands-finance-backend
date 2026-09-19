@@ -34,6 +34,7 @@ class Transaction(BaseModel):
         FAMILY_EVENTS = "family_events", "Eventos Familiares"
         TAXES = "taxes", "Impuestos"
         WORK = "work", "Trabajo"
+        SPORTS = "sport", "Deporte"
         OTHER = "other", "Other"
 
     island = models.ForeignKey(Island, on_delete=models.CASCADE, related_name="transactions")

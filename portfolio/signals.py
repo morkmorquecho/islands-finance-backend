@@ -12,22 +12,22 @@ def create_default_cash(sender, instance, created, **kwargs):
 
     module, _ = Module.objects.get_or_create(
         user=instance,
-        system_key="cash",
+        type=Module.Type.CASH,
+        is_system=True,
         defaults={
             "name": "Efectivo",
-            "type": Module.Type.CASH,
             "order": 0,
         },
     )
 
     Island.objects.get_or_create(
         user=instance,
-        system_key="cash",
+        module=module,
+        kind=Island.Kind.CASH,
+        is_system=True,
         defaults={
-            "module": module,
             "name": "Efectivo",
-            "kind": Island.Kind.CASH,
             "currency": Island.Currency.MXN,
             "color": "#22C55E",
         },
-    )
+)
