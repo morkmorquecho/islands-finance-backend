@@ -20,9 +20,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from core.error_codes import ErrorCodes
 from core.responses.messages import AuthMessages
 from auth.base import BaseAuthenticationView
-
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -32,24 +33,11 @@ class LoginView(BaseJWTView, GenericAPIView):
     permission_classes = [AllowAny]
     throttle_classes = [LoginThrottle]
     serializer_class = LoginSerializer
-    sentry_operation_name = "jwt_login"
 
     def post(self, request, *args, **kwargs):
-        return self.handle_with_sentry(
-            operation=self._jwt_login,
-            request=request,
-            tags={
-                'app': 'authentication',
-                'component': 'LoginView',
-                'provider': 'jwt'
-            },
-            success_status=status.HTTP_200_OK
-        )
-
-    def _jwt_login(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError(serializer.errors)
 
         data     = serializer.validated_data
         username = data.get('username')
@@ -60,20 +48,29 @@ class LoginView(BaseJWTView, GenericAPIView):
         user_obj = LoginService.get_user_by_credential(username=username, email=email)
 
         if LoginService.check_provider_only_account(user_obj):
-            return Response(AuthMessages.USE_PROVIDER_OR_SET_PASSWORD, status=status.HTTP_401_UNAUTHORIZED)
-        
+            raise AuthenticationFailed(
+                detail=AuthMessages.USE_PROVIDER_OR_SET_PASSWORD,
+                code=ErrorCodes.AUTHENTICATION_FAILED,
+            )
+
         inactive = LoginService.check_inactive_user(user_obj, password, ip) if user_obj else None
         if inactive:
             self.log_auth_event('jwt_login_failed', user=None, success=False,
                                 reason=inactive['reason'], ip=ip)
-            return Response(inactive['response'], status=status.HTTP_401_UNAUTHORIZED)
+            raise AuthenticationFailed(
+                detail=inactive['response'],
+                code=ErrorCodes.AUTHENTICATION_FAILED,
+            )
 
         user = LoginService.authenticate_user(request, user_obj=user_obj,
                                             username=username, password=password)
         if not user:
             self.log_auth_event('jwt_login_failed', user=None, success=False,
                                 reason='Credenciales inválidas', ip=ip)
-            return Response(AuthMessages.CREDENTIALS_INVALID, status=status.HTTP_401_UNAUTHORIZED)
+            raise AuthenticationFailed(
+                detail=AuthMessages.CREDENTIALS_INVALID,
+                code=ErrorCodes.AUTHENTICATION_FAILED,
+            )
 
         response_data = self.generate_token_response(user)
         self.log_auth_event('jwt_login_success', user=user, method='username_email')
