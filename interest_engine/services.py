@@ -9,7 +9,7 @@ def calculate_cash_island_value(island, as_of: date = None) -> dict:
 
     as_of = as_of or timezone.localdate()
     rate = island.annual_rate or Decimal("0")
-    daily_rate = rate / Decimal("360")
+    daily_rate = rate / Decimal("365")
 
     deposited = Decimal("0")
     value = Decimal("0")
@@ -17,8 +17,13 @@ def calculate_cash_island_value(island, as_of: date = None) -> dict:
     for tx in island.transactions.filter(date__lte=as_of).only("type", "amount", "date"):
         signed_amount = tx.amount if tx.type == "deposit" else -tx.amount
         days = (as_of - tx.date).days
-        growth = signed_amount * (1 + daily_rate) ** Decimal(days)
-        value += growth
+
+        tx_value = signed_amount
+        for _ in range(days):
+            daily_interest = (tx_value * daily_rate).quantize(Decimal("0.01"))
+            tx_value += daily_interest
+
+        value += tx_value
         deposited += signed_amount
 
     return {
