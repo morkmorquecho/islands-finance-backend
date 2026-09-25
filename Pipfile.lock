@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "96e7036287fb20ad4a8a8ec3643c0244c87675c7c6cef45ef147c6921809de05"
+            "sha256": "32eb1aa437a582a5b1063279fa9051cf82d181fb0daf4f5de968f6039601a93b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -803,6 +803,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.10'",
             "version": "==2.57.0"
+        },
+        "gunicorn": {
+            "hashes": [
+                "sha256:62b864895d9ebff0b2f9867ba04fe811c93121596540830c9c916d0769668447",
+                "sha256:bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.10'",
+            "version": "==26.2.0"
         },
         "idna": {
             "hashes": [
@@ -1687,13 +1696,6 @@
             ],
             "index": "pypi",
             "version": "==3.8"
-        },
-        "pytz": {
-            "hashes": [
-                "sha256:2211d3fcf9a797d3405cac96ac7f61d80e6a644f72a3309607282fe8a2010c5d",
-                "sha256:dd95840dd199baea12d9cc096a1d452caa6596a1c1e4b5f3dbd1541855d5e815"
-            ],
-            "version": "==2026.3.post1"
         },
         "pyyaml": {
             "hashes": [

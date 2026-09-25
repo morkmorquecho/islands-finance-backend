@@ -27,6 +27,7 @@ psycopg = {extras = ["binary"], version = "*"}
 python-decouple = "*"
 mkdocs-material = "*"
 geoip2 = "*"
+gunicorn = "*"
 
 [dev-packages]
 
