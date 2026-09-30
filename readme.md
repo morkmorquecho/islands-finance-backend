@@ -25,9 +25,6 @@ Python · Django · Django REST Framework · PostgreSQL · SimpleJWT · drf-spec
 
 ## Engineering Decisions
 
-**Explicit "price unavailable" instead of fake zeros.**
-An early version returned `Decimal("0")` when a price could not be fetched, and downstream code treated it as a real price, producing false 100% losses and $0 totals. The fix was to propagate `None` / `price_unavailable` through the whole chain, so the UI can say "price not available" instead of showing wrong numbers.
-
 **Native vs. base currency values.**
 Each asset stores `value_native` and `value_base`, which lets a portfolio with crypto, USD stocks and MXN cash be aggregated in one currency without losing the original value.
 
