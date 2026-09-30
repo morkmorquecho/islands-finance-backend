@@ -27,7 +27,7 @@ warnings.filterwarnings('ignore', module='dj_rest_auth.registration.serializers'
 import sentry_sdk
 
 sentry_sdk.init(
-    dsn=    ('SDK_SENTRY', default=None),
+    dsn=config('SDK_SENTRY', default=None),
     # Add data like request headers and IP for users,
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
     send_default_pii=True,
