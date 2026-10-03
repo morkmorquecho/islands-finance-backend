@@ -220,6 +220,11 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     },
 }
+GOOGLE_CLIENT_IDS = [
+    config('ID_GOOGLE_CLIENT_WEB'),
+]
+GOOGLE_OAUTH2_CLIENT_ID = config('ID_GOOGLE_CLIENT_WEB')
+GOOGLE_OAUTH2_ALLOWED_CLIENT_IDS = GOOGLE_CLIENT_IDS
 
 
 #================================================ AUTH BACKEND =====================================================
