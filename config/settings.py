@@ -242,14 +242,14 @@ if config('ACTIVE_RATES', default=False, cast=bool):
             'config.throttling.BurstRateThrottle',
     )
     DEFAULT_THROTTLE_RATES = {
-            'anon': '35/hour',
-            'user': '500/hour',
-            'login': '5/hour',
-            'register': '30/hour',
-            'sensitive': '5/hour',
-            'heavy': '20/hour',
-            'burst': '20/min',
-            'register_valid':'3/hour'
+        'anon': '300/hour',
+        'user': '3000/hour',
+        'burst': '60/min',
+        'login': '5/hour',
+        'register': '30/hour',
+        'sensitive': '5/hour',
+        'heavy': '20/hour',
+        'register_valid': '3/hour',
     }
 else:
     DEFAULT_THROTTLE_CLASSES = (
