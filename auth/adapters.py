@@ -1,4 +1,6 @@
 import re
+from allauth.account.models import EmailAddress
+
 import unicodedata
 from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from django.contrib.auth import get_user_model
@@ -101,6 +103,59 @@ class CustomFacebookOAuth2Adapter(FacebookOAuth2Adapter):
     
 
 
+# accounts/adapters.py
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class AutoLinkSocialAccountAdapter(DefaultSocialAccountAdapter):
+
+    def pre_social_login(self, request, sociallogin):
+        if sociallogin.is_existing:
+            return
+
+        email = (sociallogin.user.email or '').strip().lower()
+        if not email:
+            return
+
+        email_verified = any(
+            e.verified and e.email.lower() == email
+            for e in sociallogin.email_addresses
+        ) or bool(sociallogin.account.extra_data.get('email_verified'))
+        if not email_verified:
+            return
+
+        existing_user = User.objects.filter(email__iexact=email).first()
+        if not existing_user:
+            return
+
+        # Google ya verificó este correo: marcarlo antes de que corran los stages
+        address = EmailAddress.objects.filter(
+            user=existing_user, email__iexact=email
+        ).first()
+        if address:
+            if not address.verified:
+                address.verified = True
+                address.save(update_fields=['verified'])
+        else:
+            EmailAddress.objects.create(
+                user=existing_user,
+                email=email,
+                verified=True,
+                primary=not EmailAddress.objects.filter(
+                    user=existing_user, primary=True
+                ).exists(),
+            )
+
+        sociallogin.connect(request, existing_user)
+
+    def save_user(self, request, sociallogin, form=None):
+        if sociallogin.user.pk:
+            return sociallogin.user
+        return super().save_user(request, sociallogin, form)
+    
 class GoogleIDTokenAdapter(GoogleOAuth2Adapter):
     """
     Verifica el ID Token de Google localmente (sin llamar a userinfo).
