@@ -1,8 +1,7 @@
-from rest_framework import serializers
 from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework import serializers
 
-from portfolio.models import Island
-from .models import Transaction
+from .models import Island, Transaction
 from .services import assert_sufficient_funds
 
 
@@ -32,6 +31,7 @@ class TransactionSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         island = attrs.get("island", getattr(self.instance, "island", None))
         tx_type = attrs.get("type", getattr(self.instance, "type", None))
+        tx_date = attrs.get("date", getattr(self.instance, "date", None))
         amount = attrs.get("amount", getattr(self.instance, "amount", None))
         quantity = attrs.get("quantity", getattr(self.instance, "quantity", None))
         price_at_tx = attrs.get("price_at_tx", getattr(self.instance, "price_at_tx", None))
@@ -78,18 +78,16 @@ class TransactionSerializer(serializers.ModelSerializer):
             )
 
         # Business rule that depends on *other* transactions already on this
-        # island (can't withdraw/sell more than what's actually there).
-        # Lives in services.py, not here, because it needs to query history —
-        # this method only checks the shape of the incoming data.
+        # island. For cash islands it uses the balance WITH compounded
+        # interest on the tx date (see services.py / interest_engine.py).
         try:
             assert_sufficient_funds(
                 island, tx_type,
-                amount=amount, quantity=quantity,
+                amount=amount, quantity=quantity, tx_date=tx_date,
                 exclude_pk=self.instance.pk if self.instance else None,
             )
         except DjangoValidationError as exc:
-            raise serializers.ValidationError({"amount": exc.messages[0]}) \
-                if tx_type in {Transaction.Type.WITHDRAWAL, Transaction.Type.EXPENSE} \
-                else serializers.ValidationError({"quantity": exc.messages[0]})
+            field = "amount" if island.kind == Island.Kind.CASH else "quantity"
+            raise serializers.ValidationError({field: exc.messages[0]})
 
         return attrs
