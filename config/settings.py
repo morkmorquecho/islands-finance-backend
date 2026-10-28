@@ -18,6 +18,9 @@ from pathlib import Path
 
 import sentry_sdk
 DOMAIN = config('DOMAIN')
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")  
+TELEGRAM_BOT_USERNAME = os.environ.get("TELEGRAM_BOT_USERNAME", "")
 
 import warnings
 #IGNORAR WARNINGS INNUTILES
@@ -80,6 +83,7 @@ INSTALLED_APPS = [
     'market_data',
     'interest_engine',
     'ledger',
+    'telegram_bot',
 ]
 
 

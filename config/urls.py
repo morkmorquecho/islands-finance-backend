@@ -15,7 +15,7 @@ from portfolio.urls import urlpatterns as portfolio_patterns
 from goals.urls import urlpatterns as goals_patterns
 from ledger.urls import urlpatterns as ledgers_patterns
 from market_data.urls import urlpatterns as market_data_patterns
-
+from telegram_bot.urls import urlpatterns as telegram_bot_patterns
 
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -28,6 +28,7 @@ api_v1_patterns = [
     path("goals/", include(goals_patterns)),
     path("transactions/", include(ledgers_patterns)),
     path("market-data/", include(market_data_patterns)),
+    path("telegram/", include(telegram_bot_patterns))
 ]
 
 
