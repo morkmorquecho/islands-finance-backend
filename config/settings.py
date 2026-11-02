@@ -87,6 +87,7 @@ INSTALLED_APPS = [
 ]
 
 
+
 #================================================= CONFIG DATABSE =================================================
 #Autenticacion por Windows (comun en sql server)
 if config('DB_WINDOWS_AUTH', default=False, cast=bool):
