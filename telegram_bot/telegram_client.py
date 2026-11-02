@@ -1,4 +1,4 @@
-"""Thin wrapper over the Telegram Bot API. Never raises: failures are logged."""
+"""Cliente mínimo de la API de Telegram. Nunca lanza excepciones: los fallos se registran."""
 import logging
 
 import requests
@@ -14,11 +14,13 @@ def _call(method: str, **payload):
     url = API_URL.format(token=settings.TELEGRAM_BOT_TOKEN, method=method)
     try:
         response = requests.post(url, json=payload, timeout=5)
-    except requests.RequestException:
-        logger.exception("Telegram %s failed", method)
+    except requests.RequestException as exc:
+        # Solo registramos el tipo de error: su texto completo incluye la URL,
+        # y la URL contiene el token del bot.
+        logger.error("Telegram %s falló (%s)", method, type(exc).__name__)
         return None
     if not response.ok:
-        logger.warning("Telegram %s returned %s: %s", method, response.status_code, response.text[:300])
+        logger.warning("Telegram %s respondió %s: %s", method, response.status_code, response.text[:300])
         return None
     return response.json()
 

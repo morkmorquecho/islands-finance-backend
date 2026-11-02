@@ -248,8 +248,8 @@ def _cmd_recent(link: TelegramLink, chat_id: int) -> None:
 def _cmd_undo(link: TelegramLink, chat_id: int) -> None:
     with db_transaction.atomic():
         pending = (
-            PendingTransaction.objects.select_for_update()
-            .select_related("transaction")
+            PendingTransaction.objects.select_for_update(of=("self",))
+            .select_related("transaction", "island")
             .filter(link=link, status=PendingTransaction.Status.CONFIRMED, transaction__isnull=False)
             .order_by("-confirmed_at")
             .first()
