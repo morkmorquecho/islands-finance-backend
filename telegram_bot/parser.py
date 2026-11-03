@@ -47,6 +47,7 @@ KEYWORDS: dict[str, set[str]] = {
         "comida", "taco", "tacos", "restaurante", "super", "supermercado", "cafe",
         "pizza", "desayuno", "comer", "cena", "almuerzo", "hamburguesa", "despensa",
         "mercado", "tortillas", "antojito", "antojitos", "sushi", "helado",
+        "leche",
     },
     "transport": {
         "uber", "didi", "taxi", "gasolina", "gasolinera", "camion", "pasaje",
@@ -54,7 +55,7 @@ KEYWORDS: dict[str, set[str]] = {
     },
     "subscriptions": {
         "netflix", "spotify", "disney", "hbo", "suscripcion", "suscripciones",
-        "youtube", "icloud", "chatgpt", "prime",
+        "youtube", "icloud", "chatgpt", "prime", "railway", "railways",
     },
     "housing": {
         "renta", "luz", "agua", "internet", "predial", "hipoteca", "mantenimiento",
@@ -71,11 +72,22 @@ KEYWORDS: dict[str, set[str]] = {
     "clothing": {"ropa", "zapatos", "tenis", "playera", "pantalon", "camisa"},
     "travel": {"viaje", "viajes", "hotel", "vuelo", "avion", "hospedaje", "airbnb"},
     "education": {"curso", "libro", "libros", "colegiatura", "escuela", "udemy"},
-    "finance": {"comision", "interes", "prestamo", "tarjeta", "deuda"},
+    "finance": {
+        "comision", "interes", "prestamo", "tarjeta", "deuda",
+        "accion", "acciones", "titulo", "titulos", "etf", "etfs", "cetes",
+        "inversion", "inversiones", "broker", "gbm",
+        "cripto", "criptos", "criptomoneda", "criptomonedas",
+        "bitcoin", "btc", "ethereum", "eth",
+    },
     "family_events": {"regalo", "cumpleanos", "boda", "bautizo", "funeral", "familia"},
     "taxes": {"sat", "impuesto", "impuestos", "isr", "iva"},
     "work": {"trabajo", "oficina", "herramienta", "herramientas"},
-    "sport": {"gym", "gimnasio", "deporte", "futbol", "cancha"},
+    "sport": {
+        "gym", "gimnasio", "deporte", "deportes", "futbol", "cancha",
+        "padel", "basquetbol", "basketball", "beisbol", "voleibol", "volley",
+        "natacion", "alberca", "boxeo", "yoga", "pilates", "crossfit",
+        "running", "ciclismo", "golf", "surf", "raqueta", "entrenamiento",
+    },
 }
 
 _WORD_TO_CATEGORY: dict[str, str] = {
